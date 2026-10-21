@@ -33,6 +33,10 @@ FRAME = re.compile(r"\(rbm-QP301M8-1887-(\d+)([a-z]?)~(\d+)\)\.jpe?g$", re.I)
 PER_SERIES = 3
 TARGET_NUDE = 100
 TARGET_CLOTHED = 60
+# Counts as nude for the "Include nude studies" switch (the draped studies are topless).
+NUDE = re.compile(r"\b(nude|draped)\b", re.I)
+# Frames rejected on visual review: model out of shot, or too faded to draw from.
+REJECTED = {"muybridge-034b-05", "muybridge-159a-11", "muybridge-159a-12"}
 
 
 def fetch(url, timeout=60):
@@ -90,7 +94,7 @@ def main(download_dir, manifest_path):
         frames.sort()
         step = max(1, len(frames) // PER_SERIES)
         for frame, t in frames[::step][:PER_SERIES]:
-            (nude if re.search(r"\bnude\b", t, re.I) else clothed).append((series, t))
+            (nude if NUDE.search(t) else clothed).append((series, t))
     chosen = nude[:TARGET_NUDE] + clothed[:TARGET_CLOTHED]
     print(f"candidates: {len(per_series)} series, {len(nude)} nude, {len(clothed)} clothed; downloading {len(chosen)}")
 
@@ -117,6 +121,8 @@ def main(download_dir, manifest_path):
             action = re.sub(r"\s*\(rbm-.*$", "", name)
             m = FRAME.search(name)
             file_id = f"muybridge-{m.group(1)}{m.group(2)}-{int(m.group(3)):02d}".lower()
+            if file_id in REJECTED:
+                continue
             out = os.path.join(download_dir, file_id + ".jpg")
             out_exists = os.path.exists(out) and os.path.getsize(out) > 0
             if out_exists:
@@ -139,7 +145,7 @@ def main(download_dir, manifest_path):
                 "file": f"/photos/{file_id}.jpg",
                 "action": action,
                 "plate": int(m.group(1)),
-                "nude": bool(re.search(r"\bnude\b", action, re.I)),
+                "nude": bool(NUDE.search(action)),
                 "width": ii["width"],
                 "height": ii["height"],
                 "source": ii["descriptionurl"],

@@ -47,7 +47,9 @@ web files, see the scripts in `scripts/models/` (they run in Blender's command l
 - Used for every file in `public/photos/`. The per-photo Commons page, title and license are
   recorded in `lib/photos.json` and linked from the Drill screen.
 - Only single frames of adult figures are included; anything involving children or animals is
-  excluded by the download script. Nude studies are flagged (`nude: true`) so the app can filter them.
+  excluded by the download script, and every frame was reviewed by eye (frames with the model out of
+  shot or too faded were dropped). Nude and topless draped studies are flagged (`nude: true`) so the
+  app can filter them.
 - Regenerate with `python3 -I scripts/photos/fetch_muybridge.py <download_dir> <manifest.json>`.
 
 ### Why not other "free reference" sites?
