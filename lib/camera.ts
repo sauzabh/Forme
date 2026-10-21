@@ -32,19 +32,25 @@ export function viewShot(view: ViewId): Shot {
 
 type Vec3 = [number, number, number];
 
+/** The part of the scene to frame: the figure's real vertical extent. */
+export type Subject = { bottom: number; top: number; width: number };
+
 const toRad = (deg: number) => (deg * Math.PI) / 180;
 
 /**
  * Where to put the camera so the shot fills the screen nicely.
- * `fovDeg` is the camera's vertical field of view; `aspect` is width/height.
+ * `subject` is what's actually visible (a seated pose is shorter than a
+ * standing one); `figureHeight` is the figure's standing height, which
+ * study regions are measured against. `fovDeg` is the vertical field of
+ * view; `aspect` is width/height.
  */
 export function shotPose(
   shot: Shot,
+  subject: Subject,
   figureHeight: number,
-  figureWidth: number,
   fovDeg: number,
   aspect: number,
-): { position: Vec3; target: Vec3 } {
+): { position: Vec3; target: Vec3; azimuth: number; polar: number; distance: number } {
   const vHalf = Math.tan(toRad(fovDeg) / 2);
   const hHalf = vHalf * aspect;
 
@@ -61,11 +67,14 @@ export function shotPose(
     azimuth = region.azimuth ?? azimuth;
     polar = region.polar ?? polar;
   } else {
-    // Sit the figure above centre so the pose library along the bottom
+    // Sit the subject above centre so the pose library along the bottom
     // never covers the feet, and leave breathing room above the head.
-    target = [0, figureHeight * 0.4, 0];
-    const byHeight = (figureHeight * 0.5) / (vHalf * 0.68);
-    const byWidth = (figureWidth * 0.5) / (hHalf * 0.6);
+    // Short poses (seated, crouching) get a floor so they aren't framed
+    // too tightly.
+    const height = Math.max(subject.top - subject.bottom, figureHeight * 0.55);
+    target = [0, subject.bottom + height * 0.4, 0];
+    const byHeight = (height * 0.5) / (vHalf * 0.68);
+    const byWidth = (subject.width * 0.5) / (hHalf * 0.6);
     distance = Math.max(byHeight, byWidth);
   }
 
@@ -76,5 +85,5 @@ export function shotPose(
     target[1] + distance * Math.cos(p),
     target[2] + distance * Math.sin(p) * Math.cos(a),
   ];
-  return { position, target };
+  return { position, target, azimuth, polar, distance };
 }

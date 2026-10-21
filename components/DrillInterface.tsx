@@ -57,13 +57,15 @@ function DrillSetup({ drill, onClose }: { drill: Drill; onClose: () => void }) {
   const { state } = drill;
   const totalMinutes = Math.max(1, Math.round((state.count * state.duration) / 60));
 
-  const sources: { id: DrillSource; title: string; detail: string; image?: string; contain?: boolean }[] = [
+  const sources: { id: DrillSource; title: string; detail: string; image?: string; contain?: boolean; disabled?: boolean }[] = [
     { id: "figure", title: "3D figure", detail: "A new pose, angle and light each time", image: "/thumbnails/poses/Jog_Fwd_Loop.png", contain: true },
     {
       id: "photos",
       title: "Photos",
-      detail: PHOTOS.length ? `${PHOTOS.length} studies · Muybridge, 1887` : "No photos installed",
+      detail: PHOTOS.length ? `${PHOTOS.length} studies · Muybridge, 1887` : "Coming soon",
       image: PREVIEW_PHOTO?.file,
+      // Not selectable until a photo set is installed.
+      disabled: PHOTOS.length === 0,
     },
   ];
 
@@ -91,6 +93,7 @@ function DrillSetup({ drill, onClose }: { drill: Drill; onClose: () => void }) {
                   type="button"
                   role="radio"
                   aria-checked={active}
+                  disabled={source.disabled}
                   className={`${styles.source} ${active ? styles.sourceActive : ""}`}
                   onClick={() => drill.setSource(source.id)}
                 >
@@ -203,7 +206,7 @@ function DrillRun({ drill }: { drill: Drill }) {
               height={photo.height}
               className={styles.photo}
               unoptimized
-              priority
+              preload
             />
           </div>
           <a className={styles.credit} href={photo.source} target="_blank" rel="noopener noreferrer">
@@ -220,7 +223,7 @@ function DrillRun({ drill }: { drill: Drill }) {
         <div className={styles.sessionFill} style={{ width: `${((state.index - 1 + (1 - progress)) / state.count) * 100}%` }} />
       </div>
 
-      <div className={styles.timer} aria-live="polite">
+      <div className={styles.timer}>
         <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
           <circle cx="32" cy="32" r="28" className={styles.track} />
           <circle
@@ -236,7 +239,7 @@ function DrillRun({ drill }: { drill: Drill }) {
           />
         </svg>
         <span className={styles.clock}>{formatClock(state.secondsLeft)}</span>
-        <span className={styles.count}>{state.phase === "paused" ? "Paused" : `${state.index} of ${state.count}`}</span>
+        <span className={styles.count} aria-live="polite">{state.phase === "paused" ? "Paused" : `${state.index} of ${state.count}`}</span>
       </div>
 
       <div className={styles.controls}>

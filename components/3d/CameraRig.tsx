@@ -4,26 +4,34 @@ import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { CameraControls, CameraControlsImpl } from "@react-three/drei";
 import type { PerspectiveCamera } from "three";
-import { shotPose, type Shot } from "@/lib/camera";
+import { shotPose, type Shot, type Subject } from "@/lib/camera";
 
 const { ACTION } = CameraControlsImpl;
+const toDeg = (rad: number) => (rad * 180) / Math.PI;
+const toRad = (deg: number) => (deg * Math.PI) / 180;
+const TAU = Math.PI * 2;
 
 type CameraRigProps = {
   shot: Shot;
+  subject: Subject;
   figureHeight: number;
-  figureWidth: number;
   onUserOrbit: () => void;
 };
 
 /**
- * Smooth orbit camera. Whenever `shot` changes (a view button, a study
- * region, a new drill pose) the camera glides there. Dragging orbits,
- * scrolling zooms toward the cursor; panning is off so the figure can't
- * be lost off-screen.
+ * Smooth orbit camera.
+ * - A new `shot` (a view button, a study region, a drill pose) glides the
+ *   camera to that angle.
+ * - A new `subject` alone (another figure, another pose) keeps the angle the
+ *   artist is looking from and only re-frames, so nothing jumps.
+ * Dragging orbits, scrolling zooms toward the cursor; panning is off so the
+ * figure can't be lost off-screen.
  */
-export default function CameraRig({ shot, figureHeight, figureWidth, onUserOrbit }: CameraRigProps) {
+export default function CameraRig({ shot, subject, figureHeight, onUserOrbit }: CameraRigProps) {
   const controlsRef = useRef<CameraControlsImpl>(null);
+  const lastShot = useRef<Shot | null>(null);
   const get = useThree((state) => state.get);
+  const { bottom, top, width } = subject;
 
   useEffect(() => {
     const controls = controlsRef.current;
@@ -37,16 +45,32 @@ export default function CameraRig({ shot, figureHeight, figureWidth, onUserOrbit
   useEffect(() => {
     const controls = controlsRef.current;
     if (!controls) return;
+    const keepAngle = lastShot.current === shot && !shot.focus;
+    const effective: Shot = keepAngle
+      ? { ...shot, azimuth: toDeg(controls.azimuthAngle), polar: toDeg(controls.polarAngle) }
+      : shot;
+    lastShot.current = shot;
+
     const { camera, size } = get();
-    const { position, target } = shotPose(
-      shot,
+    const pose = shotPose(
+      effective,
+      { bottom, top, width },
       figureHeight,
-      figureWidth,
       (camera as PerspectiveCamera).fov,
       size.width / size.height,
     );
-    controls.setLookAt(...position, ...target, true);
-  }, [shot, figureHeight, figureWidth, get]);
+
+    // Turn the short way round: after free orbiting the current angle can
+    // be several full turns away from -180…180, and a naive move would
+    // spin all the way back.
+    controls.normalizeRotations();
+    const current = controls.azimuthAngle;
+    const wanted = toRad(pose.azimuth);
+    const delta = ((((wanted - current + Math.PI) % TAU) + TAU) % TAU) - Math.PI;
+    controls.setTarget(...pose.target, true);
+    controls.rotateTo(current + delta, toRad(pose.polar), true);
+    controls.dollyTo(pose.distance, true);
+  }, [shot, bottom, top, width, figureHeight, get]);
 
   return (
     <CameraControls

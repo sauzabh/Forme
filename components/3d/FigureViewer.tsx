@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { ContactShadows, Html, useGLTF } from "@react-three/drei";
+import { ContactShadows, Html } from "@react-three/drei";
+import { preloadModel } from "./models";
 import CameraRig from "./CameraRig";
 import StudioLights from "./StudioLights";
 import { FigureModel, SkeletonModel } from "./FigureModel";
@@ -10,7 +11,7 @@ import { PosedFigure } from "./PosedFigure";
 import ModelErrorBoundary from "./ModelErrorBoundary";
 import { ALL_FIGURES, type Figure } from "@/lib/figures";
 import { POSE_LIBRARY_URL } from "@/lib/poses";
-import type { Shot } from "@/lib/camera";
+import type { Shot, Subject } from "@/lib/camera";
 import type { Light } from "@/lib/lighting";
 import styles from "./FigureViewer.module.css";
 
@@ -32,15 +33,26 @@ type FigureViewerProps = {
  * so it stays light on battery while an artist is drawing from it.
  */
 export default function FigureViewer({ figure, pose, showSkeleton, shot, light, onUserOrbit }: FigureViewerProps) {
-  // Quietly fetch everything else after the first figure is up, so switching is instant.
+  // What the camera frames: a posed figure's measured extent once known,
+  // otherwise the figure standing.
+  const [measured, setMeasured] = useState<{ key: string; subject: Subject } | null>(null);
+  const poseKey = `${figure.model}|${pose.id}`;
+  const subject: Subject =
+    figure.posable && measured?.key === poseKey
+      ? measured.subject
+      : { bottom: 0, top: figure.height, width: figure.width };
+  const handleFramed = useCallback((s: Subject) => setMeasured({ key: poseKey, subject: s }), [poseKey]);
+
+  // The pose library is needed immediately; everything else is fetched
+  // quietly once the first figure is up, so switching later is instant.
   useEffect(() => {
-    useGLTF.preload(POSE_LIBRARY_URL);
+    preloadModel(POSE_LIBRARY_URL);
     const timer = setTimeout(() => {
       for (const f of ALL_FIGURES) {
-        useGLTF.preload(f.model);
-        if (f.skeleton) useGLTF.preload(f.skeleton);
+        preloadModel(f.model);
+        if (f.skeleton) preloadModel(f.skeleton);
       }
-    }, 1500);
+    }, 2500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -57,7 +69,7 @@ export default function FigureViewer({ figure, pose, showSkeleton, shot, light, 
         <ModelErrorBoundary height={figure.height} resetKey={figure.model}>
           <Suspense fallback={<LoadingLabel height={figure.height} />}>
             {figure.posable ? (
-              <PosedFigure url={figure.model} poseId={pose.id} progress={pose.progress} />
+              <PosedFigure url={figure.model} poseId={pose.id} progress={pose.progress} onFramed={handleFramed} />
             ) : (
               <FigureModel url={figure.model} xray={showSkeleton && Boolean(figure.skeleton)} />
             )}
@@ -77,7 +89,7 @@ export default function FigureViewer({ figure, pose, showSkeleton, shot, light, 
         {/* Soft grounding shadow right under the feet. */}
         <ContactShadows position={[0, 0.002, 0]} scale={2.4} resolution={512} blur={2.6} far={0.8} opacity={0.32} color="#3a362f" />
 
-        <CameraRig shot={shot} figureHeight={figure.height} figureWidth={figure.width} onUserOrbit={onUserOrbit} />
+        <CameraRig shot={shot} subject={subject} figureHeight={figure.height} onUserOrbit={onUserOrbit} />
       </Canvas>
     </div>
   );

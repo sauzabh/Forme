@@ -47,8 +47,10 @@ export default function Studio() {
   const [shot, setShot] = useState<Shot>(() => viewShot(DEFAULT_VIEW));
   const [activeView, setActiveView] = useState<ViewId | null>(DEFAULT_VIEW);
   const [studyRegion, setStudyRegion] = useState<RegionId | null>(null);
+  const [returnShot, setReturnShot] = useState<{ shot: Shot; view: ViewId | null } | null>(null);
 
   const drill = useDrill();
+  const { end: endDrill } = drill;
   const drillActive = drill.state.phase === "running" || drill.state.phase === "paused";
   const drillPose = drillActive && drill.state.source === "figure" ? drill.state.pose : null;
   const randomize = drill.state.randomize;
@@ -75,16 +77,23 @@ export default function Studio() {
     setShot(viewShot(view));
   }, []);
 
-  const selectRegion = useCallback((region: RegionId | null) => {
-    setStudyRegion(region);
-    if (region) {
-      setActiveView(null);
-      setShot((current) => ({ ...current, focus: region }));
-    } else {
-      setActiveView(DEFAULT_VIEW);
-      setShot(viewShot(DEFAULT_VIEW));
-    }
-  }, []);
+  const selectRegion = useCallback(
+    (region: RegionId | null) => {
+      if (region) {
+        // Remember the view from before zooming in, to return to it later.
+        if (!studyRegion) setReturnShot({ shot, view: activeView });
+        setActiveView(null);
+        setShot({ ...shot, focus: region });
+      } else {
+        const back = returnShot ?? { shot: viewShot(DEFAULT_VIEW), view: DEFAULT_VIEW };
+        setActiveView(back.view);
+        setShot({ ...back.shot, focus: null }); // a new object, so the camera moves
+        setReturnShot(null);
+      }
+      setStudyRegion(region);
+    },
+    [studyRegion, shot, activeView, returnShot],
+  );
 
   const selectPose = useCallback((id: string) => {
     setPoseId(id);
@@ -104,17 +113,16 @@ export default function Studio() {
   const changeMode = useCallback(
     (next: Mode) => {
       if (next === "drill" && mode !== "drill") setReturnMode(mode);
+      // Leaving Drill any way (top bar, ×, Esc) resets it, so it reopens on setup.
+      if (mode === "drill" && next !== "drill") endDrill();
       setMode(next);
       // Leaving Study pulls the camera back out to the full figure.
       if (next !== "study" && studyRegion) selectRegion(null);
     },
-    [mode, studyRegion, selectRegion],
+    [mode, studyRegion, selectRegion, endDrill],
   );
 
-  const closeDrill = useCallback(() => {
-    drill.end();
-    changeMode(returnMode);
-  }, [drill, changeMode, returnMode]);
+  const closeDrill = useCallback(() => changeMode(returnMode), [changeMode, returnMode]);
 
   const handleUserOrbit = useCallback(() => {
     setActiveView(null);
@@ -124,8 +132,15 @@ export default function Studio() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
-      const target = event.target;
-      if (target instanceof Element && target.closest("input, textarea, select")) return;
+      const target = event.target instanceof Element ? event.target : null;
+      // Typing in a text field: leave every key alone. (Sliders are fine —
+      // after dragging one, shortcuts should still work.)
+      if (target?.closest("textarea, select, input:not([type=range])")) return;
+      // A control focused from the keyboard keeps its normal Space behaviour
+      // (press the button); a control merely clicked with the mouse doesn't.
+      const keyboardControl =
+        target?.matches(":focus-visible") && target.closest('button, [role="switch"], [role="radio"], [role="slider"]');
+      if (event.key === " " && keyboardControl) return;
 
       if (drillActive) {
         if (event.key === " ") {

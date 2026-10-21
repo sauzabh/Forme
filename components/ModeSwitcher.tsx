@@ -25,6 +25,7 @@ export default function ModeSwitcher({ mode, onModeChange }: ModeSwitcherProps) 
         <button
           key={item.key}
           type="button"
+          aria-pressed={item.key === mode}
           className={item.key === mode ? `${styles.tab} ${styles.active}` : styles.tab}
           onClick={() => onModeChange(item.key)}
         >

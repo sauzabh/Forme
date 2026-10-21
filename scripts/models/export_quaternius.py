@@ -75,6 +75,13 @@ def keep_only_normal_map(size=1024):
         bsdf = next((n for n in nodes if n.type == "BSDF_PRINCIPLED"), None)
         if not bsdf:
             continue
+        # Only the body keeps its normal map; small parts (eyes) go fully
+        # plain. (An eye texture once lost its image in WebP conversion and
+        # broke loading of the whole figure.)
+        if not mat.name.startswith("MI_Superhero"):
+            for n in list(nodes):
+                if n.type in ("TEX_IMAGE", "NORMAL_MAP"):
+                    nodes.remove(n)
         for name in ("Base Color", "Roughness", "Metallic"):
             sock = bsdf.inputs.get(name)
             if sock:
@@ -116,6 +123,8 @@ bpy.ops.export_scene.gltf(
     filepath=poses_path, export_format="GLB", use_selection=True,
     export_animations=True, export_animation_mode="ACTIONS", export_force_sampling=True,
     export_frame_step=2, export_def_bones=True, export_materials="NONE",
+    # Drop keyframes that never change (e.g. constant bone scale) — much smaller file.
+    export_optimize_animation_size=True,
 )
 manifest = []
 for name, (label, category, moment) in POSES.items():
@@ -140,7 +149,13 @@ for tag in ("Female", "Male"):
     path = os.path.join(out_dir, "models", f"figure-{tag.lower()}.glb")
     bpy.ops.export_scene.gltf(
         filepath=path, export_format="GLB", use_selection=True, export_animations=False,
-        export_skins=True, export_materials="EXPORT", export_image_format="AUTO", export_texcoords=True,
+        export_skins=True, export_materials="EXPORT", export_texcoords=True,
+        # Smaller downloads: WebP texture + Draco-compressed geometry (the app
+        # self-hosts the Draco decoder from the three.js package).
+        export_image_format="WEBP", export_image_quality=88,
+        export_draco_mesh_compression_enable=True, export_draco_mesh_compression_level=7,
+        export_draco_position_quantization=14, export_draco_normal_quantization=10,
+        export_draco_texcoord_quantization=12, export_draco_generic_quantization=12,
     )
     print(f"[export] {path} {os.path.getsize(path) / 1e6:.2f} MB height {height:.3f}")
 

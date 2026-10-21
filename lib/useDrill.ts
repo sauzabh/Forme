@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer } from "react";
+import { useEffect, useMemo, useReducer } from "react";
 import { POSABLE_FIGURES, type FigureId } from "./figures";
 import { eligiblePhotos } from "./photos";
 import { POSES } from "./poses";
@@ -129,9 +129,8 @@ function reducer(state: DrillState, action: Action): DrillState {
       if (state.secondsLeft > 1) return { ...state, secondsLeft: state.secondsLeft - 1 };
       return advance(state, action.next);
     case "skip":
-      return state.phase === "running" || state.phase === "paused"
-        ? advance({ ...state, phase: "running" }, action.next)
-        : state;
+      // Skipping while paused moves on but stays paused.
+      return state.phase === "running" || state.phase === "paused" ? advance(state, action.next) : state;
     case "pause":
       return state.phase === "running" ? { ...state, phase: "paused" } : state;
     case "resume":
@@ -168,34 +167,45 @@ export function nextPhotoId(state: DrillState): string | null {
 export function useDrill() {
   const [state, dispatch] = useReducer(reducer, INITIAL);
 
+  // Restart the one-second tick for every new pose, so each pose gets its
+  // full time (not whatever was left of the previous second).
   useEffect(() => {
     if (state.phase !== "running") return;
     const id = setInterval(() => dispatch({ type: "tick", next: randomPose() }), 1000);
     return () => clearInterval(id);
-  }, [state.phase]);
+  }, [state.phase, state.index]);
 
-  const photoCount = eligiblePhotos(state.includeNude).length;
+  const { source, includeNude } = state;
 
-  return {
-    state,
-    photoCount,
-    canStart: state.source === "figure" || photoCount > 0,
-    setSource: (source: DrillSource) => dispatch({ type: "setSource", source }),
-    setDuration: (seconds: number) => dispatch({ type: "setDuration", seconds }),
-    changeCount: (delta: number) => dispatch({ type: "changeCount", delta }),
-    toggle: (key: RandomizeKey) => dispatch({ type: "toggle", key }),
-    toggleNude: () => dispatch({ type: "toggleNude" }),
-    start: () =>
-      dispatch({
-        type: "start",
-        pose: randomPose(),
-        photoOrder: state.source === "photos" ? shuffle(eligiblePhotos(state.includeNude).map((p) => p.id)) : [],
-      }),
-    skip: () => dispatch({ type: "skip", next: randomPose() }),
-    pause: () => dispatch({ type: "pause" }),
-    resume: () => dispatch({ type: "resume" }),
-    end: () => dispatch({ type: "end" }),
-  };
+  // Stable action functions: they only change when what they read changes,
+  // so components using them don't re-subscribe on every render.
+  const actions = useMemo(
+    () => ({
+      setSource: (next: DrillSource) => dispatch({ type: "setSource", source: next }),
+      setDuration: (seconds: number) => dispatch({ type: "setDuration", seconds }),
+      changeCount: (delta: number) => dispatch({ type: "changeCount", delta }),
+      toggle: (key: RandomizeKey) => dispatch({ type: "toggle", key }),
+      toggleNude: () => dispatch({ type: "toggleNude" }),
+      start: () =>
+        dispatch({
+          type: "start",
+          pose: randomPose(),
+          photoOrder: source === "photos" ? shuffle(eligiblePhotos(includeNude).map((p) => p.id)) : [],
+        }),
+      skip: () => dispatch({ type: "skip", next: randomPose() }),
+      pause: () => dispatch({ type: "pause" }),
+      resume: () => dispatch({ type: "resume" }),
+      end: () => dispatch({ type: "end" }),
+    }),
+    [source, includeNude],
+  );
+
+  const photoCount = eligiblePhotos(includeNude).length;
+
+  return useMemo(
+    () => ({ state, photoCount, canStart: source === "figure" || photoCount > 0, ...actions }),
+    [state, photoCount, source, actions],
+  );
 }
 
 export type Drill = ReturnType<typeof useDrill>;

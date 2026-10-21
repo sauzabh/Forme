@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useThree } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
+import { useModel } from "./models";
 import { Mesh, type BufferGeometry, type Object3D } from "three";
 
 // Matte clay tones — close to a plaster cast, so light and shadow read clearly.
@@ -30,7 +30,7 @@ type FigureModelProps = {
  * single-mesh .glb — nothing here depends on the model's internals.
  */
 export function FigureModel({ url, xray }: FigureModelProps) {
-  const { scene } = useGLTF(url);
+  const { scene } = useModel(url);
   const geometry = useMemo(() => firstGeometry(scene), [scene]);
   const invalidate = useThree((state) => state.invalidate);
 
@@ -54,7 +54,7 @@ export function FigureModel({ url, xray }: FigureModelProps) {
 }
 
 export function SkeletonModel({ url }: { url: string }) {
-  const { scene } = useGLTF(url);
+  const { scene } = useModel(url);
   const geometry = useMemo(() => firstGeometry(scene), [scene]);
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => invalidate(), [geometry, invalidate]);
