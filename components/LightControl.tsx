@@ -9,6 +9,7 @@ import {
   normalizeAngle,
   type Light,
 } from "@/lib/lighting";
+import FillSlider from "./FillSlider";
 import styles from "./LightControl.module.css";
 
 type LightControlProps = {
@@ -91,18 +92,15 @@ export default function LightControl({ light, onChange, onClose }: LightControlP
         <span className={styles.front}>Front</span>
       </div>
 
-      <label className={styles.row}>
-        <span className={styles.rowLabel}>Height</span>
-        <input
-          type="range"
-          min={ELEVATION_MIN}
-          max={ELEVATION_MAX}
-          value={light.elevation}
-          onChange={(event) => onChange({ ...light, elevation: Number(event.target.value) })}
-          className={styles.slider}
-        />
-        <span className={styles.value}>{light.elevation}°</span>
-      </label>
+      <FillSlider
+        label="Height"
+        min={ELEVATION_MIN}
+        max={ELEVATION_MAX}
+        value={light.elevation}
+        display={`${light.elevation}°`}
+        onChange={(elevation) => onChange({ ...light, elevation })}
+        ariaLabel="Light height"
+      />
 
       <div className={styles.presets} role="group" aria-label="Light presets">
         {LIGHT_PRESETS.map((preset) => (

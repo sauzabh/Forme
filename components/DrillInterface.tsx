@@ -62,7 +62,7 @@ function DrillSetup({ drill, onClose }: { drill: Drill; onClose: () => void }) {
     {
       id: "photos",
       title: "Photos",
-      detail: PHOTOS.length ? `${PHOTOS.length} studies · Muybridge, 1887` : "Coming soon",
+      detail: PHOTOS.length ? `${PHOTOS.length} Muybridge studies` : "Coming soon",
       image: PREVIEW_PHOTO?.file,
       // Not selectable until a photo set is installed.
       disabled: PHOTOS.length === 0,

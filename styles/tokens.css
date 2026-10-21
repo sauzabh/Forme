@@ -8,46 +8,49 @@
  */
 :root {
   /* ---- Color ---- */
-  /* The app is full-bleed: --color-background fills the whole window.
-     --color-surface (white) is only for things that float ON TOP of
-     the background — panels, controls, cards — added in later phases. */
-  --color-background: #f5f5f2;
+  /* A white, neutral studio: the page is plain white, controls sit on a
+     light grey track, and black is reserved for the one primary action
+     or selected state. No warm tints, no brand colour. */
+  --color-background: #ffffff;
   --color-surface: #ffffff;
 
-  --color-text-primary: #1d1d1f;
-  --color-text-secondary: #6e6e73;
-  --color-text-tertiary: #8e8e93;
+  --color-text-primary: #171717;
+  --color-text-secondary: #737373;
+  --color-text-tertiary: #a3a3a3;
 
-  --color-divider: #d2d2d7;
+  --color-divider: #ebebeb;
 
-  /* The one restrained accent — use it sparingly (small indicators,
-     a selected state), never as a large fill. */
-  --color-accent: #6e8f82;
+  /* Selected markers (light handle, progress) — neutral, like the text. */
+  --color-accent: #171717;
+  /* The only colour in the UI: a small "live" status dot. */
+  --color-live: #22a35a;
 
-  /* A faint neutral tint derived from the existing colors (not a new
-     hardcoded color) — used for inactive tracks: segmented-control
-     backgrounds, filter chips, thumbnail placeholders. */
-  --color-control-track: color-mix(in srgb, var(--color-text-primary) 4%, var(--color-background));
+  /* Grey tracks behind controls: chips, segmented controls, sliders. */
+  --color-control-track: #f3f3f3;
+  --color-control-hover: #ebebeb;
+  /* The filled part of a slider. */
+  --color-control-fill: #e0e0e0;
 
   /* A light veil over the 3D scene behind centred cards (drill setup). */
-  --color-scrim: color-mix(in srgb, var(--color-background) 55%, transparent);
+  --color-scrim: rgba(255, 255, 255, 0.62);
 
   /* ---- Layout ---- */
   /* Shared so the light panel can sit exactly beside the right toolbar. */
   --toolbar-width: 64px;
 
   /* ---- Radius ---- */
-  --radius-control: 8px; /* small controls: checkboxes, small chips */
-  --radius-button: 12px; /* buttons */
-  --radius-panel: 16px; /* panels, cards */
-  --radius-surface: 20px; /* large surfaces */
-  --radius-pill: 999px; /* fully-round — use sparingly */
+  /* Generous, soft corners; anything you press is fully round. */
+  --radius-control: 10px; /* small controls, thumbnails */
+  --radius-button: 14px; /* cards inside panels, slider rows */
+  --radius-panel: 24px; /* floating panels */
+  --radius-surface: 28px; /* large cards */
+  --radius-pill: 999px; /* buttons, chips, segmented controls */
 
   /* ---- Shadow ---- */
-  /* Kept extremely subtle on purpose — shadows here exist to separate
-     a floating element from the background, not to decorate it. */
-  --shadow-control: 0 1px 2px rgba(29, 29, 31, 0.06);
-  --shadow-panel: 0 1px 3px rgba(29, 29, 31, 0.04), 0 6px 20px rgba(29, 29, 31, 0.05);
+  /* On a white page, panels are separated by a hairline ring plus a very
+     soft, wide shadow — never a heavy drop shadow. */
+  --shadow-control: 0 1px 2px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  --shadow-panel: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 12px 32px -10px rgba(0, 0, 0, 0.1);
 
   /* ---- Spacing ---- */
   /* One consistent scale used everywhere instead of one-off pixel values. */
@@ -73,15 +76,15 @@
   --text-section-title-weight: 600;
   --text-section-title-tracking: -0.01em;
 
-  --text-body-size: 16px;
+  --text-body-size: 15px;
   --text-body-weight: 400;
 
-  --text-secondary-size: 13px;
+  --text-secondary-size: 14px;
   --text-secondary-weight: 400;
 
-  --text-meta-size: 11px;
+  --text-meta-size: 12px;
   --text-meta-weight: 500;
-  --text-meta-tracking: 0.08em;
+  --text-meta-tracking: 0.02em;
 
   /* ---- Motion ---- */
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);

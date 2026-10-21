@@ -87,7 +87,7 @@ export default function FigureViewer({ figure, pose, showSkeleton, shot, light, 
           <shadowMaterial opacity={0.14} />
         </mesh>
         {/* Soft grounding shadow right under the feet. */}
-        <ContactShadows position={[0, 0.002, 0]} scale={2.4} resolution={512} blur={2.6} far={0.8} opacity={0.32} color="#3a362f" />
+        <ContactShadows position={[0, 0.002, 0]} scale={2.4} resolution={512} blur={2.6} far={0.8} opacity={0.32} color="#1a1a1a" />
 
         <CameraRig shot={shot} subject={subject} figureHeight={figure.height} onUserOrbit={onUserOrbit} />
       </Canvas>

@@ -4,7 +4,7 @@
   left: var(--space-lg);
   bottom: calc(var(--space-lg) + 56px);
   width: 260px;
-  padding: var(--space-md) var(--space-md) var(--space-md);
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -27,9 +27,9 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px;
+  padding: 6px;
   background: var(--color-surface);
-  border-radius: var(--radius-panel);
+  border-radius: var(--radius-pill);
   box-shadow: var(--shadow-panel);
   max-width: calc(100% - 2 * var(--space-lg));
   overflow-x: auto;

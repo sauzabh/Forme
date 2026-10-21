@@ -9,7 +9,8 @@ type TopBarProps = {
 };
 
 /**
- * Wordmark, mode switcher, and the "hide interface" button. It floats over
+ * Wordmark and mode navigation on the left, the "hide interface" button
+ * on the right. It floats over
  * the 3D canvas without a background of its own, so the studio reads as
  * one continuous space.
  */
@@ -21,9 +22,8 @@ export default function TopBar({ mode, onModeChange, onHideInterface }: TopBarPr
           <Image src="/brand/forme-logo.png" alt="" width={12} height={25} className={styles.logo} unoptimized preload />
           Forme
         </span>
+        <ModeSwitcher mode={mode} onModeChange={onModeChange} />
       </div>
-
-      <ModeSwitcher mode={mode} onModeChange={onModeChange} />
 
       <div className={`${styles.side} ${styles.right}`}>
         <button

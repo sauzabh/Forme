@@ -39,7 +39,7 @@
   border: none;
   border-radius: var(--radius-pill);
   background: var(--color-surface);
-  box-shadow: var(--shadow-control);
+  box-shadow: var(--shadow-panel);
   font-family: inherit;
   font-size: var(--text-meta-size);
   color: var(--color-text-secondary);
