@@ -1,60 +1,120 @@
-.toolbar {
+.dock {
   pointer-events: auto;
   position: absolute;
   right: var(--space-lg);
-  top: 50%;
+  /* Slightly above centre so it never meets the pose panel at the bottom. */
+  top: 44%;
   transform: translateY(-50%);
   width: var(--toolbar-width);
-  padding: 4px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  background: var(--color-surface);
-  border-radius: var(--radius-button);
-  box-shadow: var(--shadow-panel);
+  align-items: center;
+  gap: var(--space-md);
 }
 
-.group {
+/* ---- Views: one tall pill ---- */
+
+.pill {
+  width: 100%;
+  padding: 5px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  background: var(--color-surface);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-panel);
 }
 
-.button {
-  height: 34px;
-  border: none;
-  border-radius: var(--radius-control);
-  background: transparent;
-  font-family: inherit;
-  font-size: var(--text-secondary-size);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
-}
-
-.button:hover {
-  color: var(--color-text-primary);
-}
-
-.active {
-  background: var(--color-control-track);
-  color: var(--color-text-primary);
-}
-
-.lightButton {
-  height: 48px;
+.view {
+  height: 62px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  font-size: var(--text-meta-size);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
 }
 
-.divider {
-  height: 1px;
-  margin: 0 6px;
-  background: var(--color-divider);
+.view:hover {
+  background: var(--color-control-track);
+  color: var(--color-text-primary);
+}
+
+.label {
+  font-size: var(--text-meta-size);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.icon {
+  display: block;
+}
+
+.orbit {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  opacity: 0.28;
+}
+
+.shoulders {
+  fill: currentColor;
+  opacity: 0.45;
+}
+
+.head {
+  fill: currentColor;
+  opacity: 0.9;
+}
+
+.sight {
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-dasharray: 1.6 1.8;
   opacity: 0.6;
+}
+
+.camera {
+  fill: currentColor;
+}
+
+.active,
+.active:hover {
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+}
+
+/* ---- Light: its own round button ---- */
+
+.light {
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.light:hover {
+  color: var(--color-text-primary);
+  transform: scale(1.04);
+}
+
+.lightOn,
+.lightOn:hover {
+  background: var(--color-text-primary);
+  color: var(--color-surface);
 }

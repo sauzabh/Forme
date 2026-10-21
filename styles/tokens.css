@@ -34,7 +34,7 @@
 
   /* ---- Layout ---- */
   /* Shared so the light panel can sit exactly beside the right toolbar. */
-  --toolbar-width: 60px;
+  --toolbar-width: 64px;
 
   /* ---- Radius ---- */
   --radius-control: 8px; /* small controls: checkboxes, small chips */

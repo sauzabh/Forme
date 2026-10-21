@@ -1,14 +1,44 @@
 /* ---- Setup / done cards ---- */
 
+/* Starts below the top bar, so the mode switcher always stays usable. */
 .scrim {
   pointer-events: auto;
   position: absolute;
-  inset: 0;
+  top: 68px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px var(--space-lg) var(--space-lg);
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
   background: var(--color-scrim);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.close {
+  width: 30px;
+  height: 30px;
+  margin: -4px -6px 0 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+}
+
+.close:hover {
+  background: var(--color-control-track);
+  color: var(--color-text-primary);
 }
 
 .card {

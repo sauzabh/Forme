@@ -29,6 +29,8 @@ const DEFAULT_VIEW: ViewId = "three-quarter";
  */
 export default function Studio() {
   const [mode, setMode] = useState<Mode>("pose");
+  // Where closing Drill should take the artist back to.
+  const [returnMode, setReturnMode] = useState<Exclude<Mode, "drill">>("pose");
   const [figureId, setFigureId] = useState<FigureId>("female");
   const [poseCategory, setPoseCategory] = useState<PoseCategory>("All");
   const [poseId, setPoseId] = useState(DEFAULT_POSE_ID);
@@ -101,12 +103,18 @@ export default function Studio() {
 
   const changeMode = useCallback(
     (next: Mode) => {
+      if (next === "drill" && mode !== "drill") setReturnMode(mode);
       setMode(next);
       // Leaving Study pulls the camera back out to the full figure.
       if (next !== "study" && studyRegion) selectRegion(null);
     },
-    [studyRegion, selectRegion],
+    [mode, studyRegion, selectRegion],
   );
+
+  const closeDrill = useCallback(() => {
+    drill.end();
+    changeMode(returnMode);
+  }, [drill, changeMode, returnMode]);
 
   const handleUserOrbit = useCallback(() => {
     setActiveView(null);
@@ -116,8 +124,8 @@ export default function Studio() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
-      const target = event.target as HTMLElement | null;
-      if (target?.closest("input, textarea, select")) return;
+      const target = event.target;
+      if (target instanceof Element && target.closest("input, textarea, select")) return;
 
       if (drillActive) {
         if (event.key === " ") {
@@ -137,6 +145,7 @@ export default function Studio() {
         setChromeHidden((hidden) => !hidden);
       } else if (event.key === "Escape") {
         if (chromeHidden) setChromeHidden(false);
+        else if (mode === "drill") closeDrill();
         else if (lightOpen) setLightOpen(false);
         else if (studyRegion) selectRegion(null);
       } else if (mode !== "drill" && ["1", "2", "3", "4"].includes(event.key)) {
@@ -149,7 +158,7 @@ export default function Studio() {
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [drill, drillActive, chromeHidden, lightOpen, studyRegion, mode, selectRegion, selectView, randomizePose]);
+  }, [drill, drillActive, chromeHidden, lightOpen, studyRegion, mode, selectRegion, selectView, randomizePose, closeDrill]);
 
   const chromeVisible = !chromeHidden && !drillActive;
   const showStudioControls = mode !== "drill";
@@ -205,7 +214,7 @@ export default function Studio() {
         )}
       </div>
 
-      {mode === "drill" && <DrillInterface drill={drill} cardsHidden={chromeHidden} />}
+      {mode === "drill" && <DrillInterface drill={drill} cardsHidden={chromeHidden} onClose={closeDrill} />}
 
       {chromeHidden && !drillActive && (
         <button type="button" className={styles.reveal} onClick={() => setChromeHidden(false)} title="Show interface (Space)">

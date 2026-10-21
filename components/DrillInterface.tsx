@@ -7,7 +7,19 @@ type DrillInterfaceProps = {
   drill: Drill;
   /** Hide the setup/done cards (e.g. while the whole interface is hidden). */
   cardsHidden: boolean;
+  /** Leave Drill and go back to the mode the artist came from. */
+  onClose: () => void;
 };
+
+function CloseButton({ onClose }: { onClose: () => void }) {
+  return (
+    <button type="button" className={styles.close} onClick={onClose} aria-label="Close drill" title="Close (Esc)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" />
+      </svg>
+    </button>
+  );
+}
 
 function formatDuration(seconds: number) {
   if (seconds < 60) return `${seconds} seconds`;
@@ -30,18 +42,18 @@ const PREVIEW_PHOTO = PHOTOS.find((p) => !p.nude) ?? PHOTOS[0];
  * run everything else steps aside; only the pose, a timer and three quiet
  * controls remain.
  */
-export default function DrillInterface({ drill, cardsHidden }: DrillInterfaceProps) {
+export default function DrillInterface({ drill, cardsHidden, onClose }: DrillInterfaceProps) {
   const { state } = drill;
 
   if (state.phase === "running" || state.phase === "paused") {
     return <DrillRun drill={drill} />;
   }
   if (cardsHidden) return null;
-  if (state.phase === "done") return <DrillDone drill={drill} />;
-  return <DrillSetup drill={drill} />;
+  if (state.phase === "done") return <DrillDone drill={drill} onClose={onClose} />;
+  return <DrillSetup drill={drill} onClose={onClose} />;
 }
 
-function DrillSetup({ drill }: { drill: Drill }) {
+function DrillSetup({ drill, onClose }: { drill: Drill; onClose: () => void }) {
   const { state } = drill;
   const totalMinutes = Math.max(1, Math.round((state.count * state.duration) / 60));
 
@@ -58,9 +70,12 @@ function DrillSetup({ drill }: { drill: Drill }) {
   return (
     <div className={styles.scrim}>
       <div className={`panel ${styles.card}`}>
-        <div className={styles.status}>
-          <span className={styles.dot} />
-          <span className="text-meta">Drill</span>
+        <div className={styles.cardHeader}>
+          <div className={styles.status}>
+            <span className={styles.dot} />
+            <span className="text-meta">Drill</span>
+          </div>
+          <CloseButton onClose={onClose} />
         </div>
         <span className={styles.headline}>Gesture drill</span>
         <span className="text-secondary">One pose after another, on a timer. Draw fast and keep moving.</span>
@@ -149,7 +164,7 @@ function DrillSetup({ drill }: { drill: Drill }) {
         <button type="button" className={`button button-primary ${styles.start}`} onClick={drill.start} disabled={!drill.canStart}>
           Start · about {totalMinutes} min
         </button>
-        <span className={styles.hint}>Space pauses · → next pose · Esc ends</span>
+        <span className={styles.hint}>While drawing: Space pauses · → next pose · Esc ends</span>
       </div>
     </div>
   );
@@ -245,15 +260,18 @@ function DrillRun({ drill }: { drill: Drill }) {
   );
 }
 
-function DrillDone({ drill }: { drill: Drill }) {
+function DrillDone({ drill, onClose }: { drill: Drill; onClose: () => void }) {
   const { state } = drill;
   const totalMinutes = Math.max(1, Math.round((state.count * state.duration) / 60));
   return (
     <div className={styles.scrim}>
       <div className={`panel ${styles.card} ${styles.doneCard}`}>
-        <div className={styles.status}>
-          <span className={styles.dot} />
-          <span className="text-meta">Drill complete</span>
+        <div className={styles.cardHeader}>
+          <div className={styles.status}>
+            <span className={styles.dot} />
+            <span className="text-meta">Drill complete</span>
+          </div>
+          <CloseButton onClose={onClose} />
         </div>
         <span className={styles.headline}>Nice work.</span>
         <span className="text-secondary">
