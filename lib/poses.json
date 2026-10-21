@@ -1,0 +1,226 @@
+[
+ {
+  "id": "Idle_Loop",
+  "label": "Standing",
+  "category": "Standing",
+  "duration": 2.5,
+  "moment": 0.0,
+  "thumbnail": "/thumbnails/poses/Idle_Loop.png"
+ },
+ {
+  "id": "Idle_Talking_Loop",
+  "label": "Talking",
+  "category": "Standing",
+  "duration": 2.933,
+  "moment": 0.35,
+  "thumbnail": "/thumbnails/poses/Idle_Talking_Loop.png"
+ },
+ {
+  "id": "PickUp_Table",
+  "label": "Reaching down",
+  "category": "Standing",
+  "duration": 0.833,
+  "moment": 0.5,
+  "thumbnail": "/thumbnails/poses/PickUp_Table.png"
+ },
+ {
+  "id": "Interact",
+  "label": "Reaching out",
+  "category": "Standing",
+  "duration": 2.0,
+  "moment": 0.45,
+  "thumbnail": "/thumbnails/poses/Interact.png"
+ },
+ {
+  "id": "Push_Loop",
+  "label": "Pushing",
+  "category": "Standing",
+  "duration": 2.667,
+  "moment": 0.3,
+  "thumbnail": "/thumbnails/poses/Push_Loop.png"
+ },
+ {
+  "id": "Walk_Loop",
+  "label": "Walking",
+  "category": "Motion",
+  "duration": 1.333,
+  "moment": 0.25,
+  "thumbnail": "/thumbnails/poses/Walk_Loop.png"
+ },
+ {
+  "id": "Walk_Formal_Loop",
+  "label": "Striding",
+  "category": "Motion",
+  "duration": 1.333,
+  "moment": 0.25,
+  "thumbnail": "/thumbnails/poses/Walk_Formal_Loop.png"
+ },
+ {
+  "id": "Jog_Fwd_Loop",
+  "label": "Jogging",
+  "category": "Motion",
+  "duration": 0.933,
+  "moment": 0.3,
+  "thumbnail": "/thumbnails/poses/Jog_Fwd_Loop.png"
+ },
+ {
+  "id": "Sprint_Loop",
+  "label": "Sprinting",
+  "category": "Motion",
+  "duration": 0.667,
+  "moment": 0.3,
+  "thumbnail": "/thumbnails/poses/Sprint_Loop.png"
+ },
+ {
+  "id": "Jump_Start",
+  "label": "Take-off",
+  "category": "Motion",
+  "duration": 1.333,
+  "moment": 0.75,
+  "thumbnail": "/thumbnails/poses/Jump_Start.png"
+ },
+ {
+  "id": "Jump_Loop",
+  "label": "Mid-air",
+  "category": "Motion",
+  "duration": 2.5,
+  "moment": 0.3,
+  "thumbnail": "/thumbnails/poses/Jump_Loop.png"
+ },
+ {
+  "id": "Jump_Land",
+  "label": "Landing",
+  "category": "Motion",
+  "duration": 1.267,
+  "moment": 0.2,
+  "thumbnail": "/thumbnails/poses/Jump_Land.png"
+ },
+ {
+  "id": "Roll",
+  "label": "Rolling",
+  "category": "Motion",
+  "duration": 1.467,
+  "moment": 0.35,
+  "thumbnail": "/thumbnails/poses/Roll.png"
+ },
+ {
+  "id": "Dance_Loop",
+  "label": "Dancing",
+  "category": "Motion",
+  "duration": 1.0,
+  "moment": 0.3,
+  "thumbnail": "/thumbnails/poses/Dance_Loop.png"
+ },
+ {
+  "id": "Swim_Fwd_Loop",
+  "label": "Swimming",
+  "category": "Motion",
+  "duration": 1.333,
+  "moment": 0.3,
+  "thumbnail": "/thumbnails/poses/Swim_Fwd_Loop.png"
+ },
+ {
+  "id": "Death01",
+  "label": "Falling",
+  "category": "Motion",
+  "duration": 2.4,
+  "moment": 0.45,
+  "thumbnail": "/thumbnails/poses/Death01.png"
+ },
+ {
+  "id": "Punch_Jab",
+  "label": "Jab",
+  "category": "Action",
+  "duration": 0.867,
+  "moment": 0.35,
+  "thumbnail": "/thumbnails/poses/Punch_Jab.png"
+ },
+ {
+  "id": "Punch_Cross",
+  "label": "Cross",
+  "category": "Action",
+  "duration": 1.0,
+  "moment": 0.4,
+  "thumbnail": "/thumbnails/poses/Punch_Cross.png"
+ },
+ {
+  "id": "Sword_Attack",
+  "label": "Swing",
+  "category": "Action",
+  "duration": 1.533,
+  "moment": 0.45,
+  "thumbnail": "/thumbnails/poses/Sword_Attack.png"
+ },
+ {
+  "id": "Spell_Simple_Shoot",
+  "label": "Casting",
+  "category": "Action",
+  "duration": 0.5,
+  "moment": 0.5,
+  "thumbnail": "/thumbnails/poses/Spell_Simple_Shoot.png"
+ },
+ {
+  "id": "Hit_Chest",
+  "label": "Recoil",
+  "category": "Action",
+  "duration": 0.333,
+  "moment": 0.6,
+  "thumbnail": "/thumbnails/poses/Hit_Chest.png"
+ },
+ {
+  "id": "Crouch_Idle_Loop",
+  "label": "Crouching",
+  "category": "Low",
+  "duration": 2.933,
+  "moment": 0.0,
+  "thumbnail": "/thumbnails/poses/Crouch_Idle_Loop.png"
+ },
+ {
+  "id": "Crouch_Fwd_Loop",
+  "label": "Crouch walk",
+  "category": "Low",
+  "duration": 2.0,
+  "moment": 0.3,
+  "thumbnail": "/thumbnails/poses/Crouch_Fwd_Loop.png"
+ },
+ {
+  "id": "Fixing_Kneeling",
+  "label": "Kneeling",
+  "category": "Low",
+  "duration": 5.2,
+  "moment": 0.35,
+  "thumbnail": "/thumbnails/poses/Fixing_Kneeling.png"
+ },
+ {
+  "id": "Sitting_Idle_Loop",
+  "label": "Seated",
+  "category": "Seated",
+  "duration": 1.667,
+  "moment": 0.0,
+  "thumbnail": "/thumbnails/poses/Sitting_Idle_Loop.png"
+ },
+ {
+  "id": "Sitting_Talking_Loop",
+  "label": "Seated, talking",
+  "category": "Seated",
+  "duration": 2.933,
+  "moment": 0.4,
+  "thumbnail": "/thumbnails/poses/Sitting_Talking_Loop.png"
+ },
+ {
+  "id": "Sitting_Enter",
+  "label": "Sitting down",
+  "category": "Seated",
+  "duration": 1.3,
+  "moment": 0.55,
+  "thumbnail": "/thumbnails/poses/Sitting_Enter.png"
+ },
+ {
+  "id": "Driving_Loop",
+  "label": "Seated, reaching",
+  "category": "Seated",
+  "duration": 1.667,
+  "moment": 0.2,
+  "thumbnail": "/thumbnails/poses/Driving_Loop.png"
+ }
+]

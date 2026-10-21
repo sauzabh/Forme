@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TopBar from "./TopBar";
-import FigureViewer from "./3d/FigureViewer";
+import FigureViewer, { type PoseState } from "./3d/FigureViewer";
 import PeelControl, { type Layer } from "./PeelControl";
 import CameraControl from "./CameraControl";
 import LightControl from "./LightControl";
@@ -10,7 +10,8 @@ import PoseBrowser from "./PoseBrowser";
 import StudyPanel from "./StudyPanel";
 import DrillInterface from "./DrillInterface";
 import type { Mode } from "./ModeSwitcher";
-import { getFigure, type FigureId } from "@/lib/figures";
+import { ANATOMY_FIGURE, getFigure, type FigureId } from "@/lib/figures";
+import { DEFAULT_POSE_ID, getPose, posesIn, type PoseCategory } from "@/lib/poses";
 import { VIEWS, viewShot, type Shot, type ViewId } from "@/lib/camera";
 import { DEFAULT_LIGHT, type Light } from "@/lib/lighting";
 import type { RegionId } from "@/lib/regions";
@@ -22,10 +23,16 @@ const DEFAULT_VIEW: ViewId = "three-quarter";
 /**
  * The whole studio. The 3D figure fills the window; every control floats
  * on top of it. All app state lives here and flows down as props.
+ *
+ * Pose and Drill use the posable figures; Study uses the anatomy figure,
+ * which is the one with a skeleton for the Bone layer.
  */
 export default function Studio() {
   const [mode, setMode] = useState<Mode>("pose");
   const [figureId, setFigureId] = useState<FigureId>("female");
+  const [poseCategory, setPoseCategory] = useState<PoseCategory>("All");
+  const [poseId, setPoseId] = useState(DEFAULT_POSE_ID);
+  const [poseProgress, setPoseProgress] = useState(() => getPose(DEFAULT_POSE_ID).moment);
   const [layer, setLayer] = useState<Layer>("skin");
   const [light, setLight] = useState<Light>(DEFAULT_LIGHT);
   const [lightOpen, setLightOpen] = useState(false);
@@ -45,7 +52,12 @@ export default function Studio() {
   const randomize = drill.state.randomize;
 
   // During a drill, randomized settings temporarily override the user's.
-  const figure = getFigure(drillPose && randomize.figure ? drillPose.figureId : figureId);
+  const figure =
+    mode === "study" ? ANATOMY_FIGURE : getFigure(drillPose && randomize.figure ? drillPose.figureId : figureId);
+  const pose = useMemo<PoseState>(
+    () => (drillPose ? { id: drillPose.poseId, progress: drillPose.poseProgress } : { id: poseId, progress: poseProgress }),
+    [drillPose, poseId, poseProgress],
+  );
   const effectiveLight =
     drillPose && randomize.light ? { azimuth: drillPose.lightAzimuth, elevation: drillPose.lightElevation } : light;
   const drillShot = useMemo<Shot | null>(
@@ -53,7 +65,7 @@ export default function Studio() {
     [drillPose, randomize.camera],
   );
   const effectiveShot = drillShot ?? shot;
-  const showSkeleton = layer === "bone" && Boolean(figure.skeleton);
+  const showSkeleton = mode === "study" && layer === "bone" && Boolean(figure.skeleton);
 
   const selectView = useCallback((view: ViewId) => {
     setActiveView(view);
@@ -71,6 +83,21 @@ export default function Studio() {
       setShot(viewShot(DEFAULT_VIEW));
     }
   }, []);
+
+  const selectPose = useCallback((id: string) => {
+    setPoseId(id);
+    setPoseProgress(getPose(id).moment);
+  }, []);
+
+  const randomizePose = useCallback(() => {
+    // Stay within the category the artist is browsing.
+    const candidates = posesIn(poseCategory);
+    const next = candidates[Math.floor(Math.random() * candidates.length)];
+    setPoseId(next.id);
+    setPoseProgress(next.moment);
+    setActiveView(null);
+    setShot({ azimuth: Math.round(Math.random() * 360 - 180), polar: Math.round(70 + Math.random() * 22), focus: null });
+  }, [poseCategory]);
 
   const changeMode = useCallback(
     (next: Mode) => {
@@ -116,11 +143,13 @@ export default function Studio() {
         selectView(VIEWS[Number(event.key) - 1].id);
       } else if (mode !== "drill" && event.key.toLowerCase() === "l") {
         setLightOpen((open) => !open);
+      } else if (mode === "pose" && event.key.toLowerCase() === "r") {
+        randomizePose();
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [drill, drillActive, chromeHidden, lightOpen, studyRegion, mode, selectRegion, selectView]);
+  }, [drill, drillActive, chromeHidden, lightOpen, studyRegion, mode, selectRegion, selectView, randomizePose]);
 
   const chromeVisible = !chromeHidden && !drillActive;
   const showStudioControls = mode !== "drill";
@@ -129,6 +158,7 @@ export default function Studio() {
     <div className={styles.app}>
       <FigureViewer
         figure={figure}
+        pose={pose}
         showSkeleton={showSkeleton}
         shot={effectiveShot}
         light={effectiveLight}
@@ -140,7 +170,6 @@ export default function Studio() {
 
         {showStudioControls && (
           <>
-            <PeelControl layer={layer} onLayerChange={setLayer} boneAvailable={Boolean(figure.skeleton)} />
             <CameraControl
               view={activeView}
               onViewChange={selectView}
@@ -151,11 +180,28 @@ export default function Studio() {
           </>
         )}
 
-        {mode === "pose" && <PoseBrowser figureId={figureId} onFigureChange={setFigureId} />}
-        {mode === "study" && <StudyPanel region={studyRegion} onRegionChange={selectRegion} />}
+        {mode === "pose" && (
+          <PoseBrowser
+            figureId={figureId}
+            onFigureChange={setFigureId}
+            category={poseCategory}
+            onCategoryChange={setPoseCategory}
+            poseId={poseId}
+            onPoseChange={selectPose}
+            progress={poseProgress}
+            onProgressChange={setPoseProgress}
+            onRandom={randomizePose}
+          />
+        )}
+        {mode === "study" && (
+          <>
+            <PeelControl layer={layer} onLayerChange={setLayer} boneAvailable={Boolean(figure.skeleton)} />
+            <StudyPanel region={studyRegion} onRegionChange={selectRegion} />
+          </>
+        )}
 
         {mode === "pose" && !hasOrbited && (
-          <p className={styles.hint}>Drag to orbit · Scroll to zoom · Space hides the interface</p>
+          <p className={styles.hint}>Drag to orbit · Scroll to zoom · R for a random pose · Space hides the interface</p>
         )}
       </div>
 

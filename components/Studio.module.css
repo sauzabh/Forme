@@ -25,7 +25,7 @@
 .hint {
   position: absolute;
   left: var(--space-lg);
-  bottom: calc(var(--space-lg) + 18px);
+  top: 64px;
   font-size: var(--text-meta-size);
   color: var(--color-text-tertiary);
 }

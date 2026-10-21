@@ -61,10 +61,10 @@ export function shotPose(
     azimuth = region.azimuth ?? azimuth;
     polar = region.polar ?? polar;
   } else {
-    // Sit the figure slightly above centre so the bottom strip never
-    // covers the feet, and leave breathing room above the head.
-    target = [0, figureHeight * 0.44, 0];
-    const byHeight = (figureHeight * 0.5) / (vHalf * 0.72);
+    // Sit the figure above centre so the pose library along the bottom
+    // never covers the feet, and leave breathing room above the head.
+    target = [0, figureHeight * 0.4, 0];
+    const byHeight = (figureHeight * 0.5) / (vHalf * 0.68);
     const byWidth = (figureWidth * 0.5) / (hHalf * 0.6);
     distance = Math.max(byHeight, byWidth);
   }

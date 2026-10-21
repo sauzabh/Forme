@@ -46,7 +46,7 @@ function DrillSetup({ drill }: { drill: Drill }) {
   const totalMinutes = Math.max(1, Math.round((state.count * state.duration) / 60));
 
   const sources: { id: DrillSource; title: string; detail: string; image?: string; contain?: boolean }[] = [
-    { id: "figure", title: "3D figure", detail: "New figure, angle and light each pose", image: "/thumbnails/female.png", contain: true },
+    { id: "figure", title: "3D figure", detail: "A new pose, angle and light each time", image: "/thumbnails/poses/Jog_Fwd_Loop.png", contain: true },
     {
       id: "photos",
       title: "Photos",

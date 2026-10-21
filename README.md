@@ -3,11 +3,12 @@
 A quiet, full-screen figure-drawing reference studio. A real sculpted human figure
 fills the screen; the controls float lightly around it and disappear with one key.
 
-- **Pose** — orbit the figure, switch figures (realistic or simplified forms), set camera
-  views, move the key light, and peel to the skeleton (realistic male).
-- **Study** — pick a body region and the camera moves in close, with a short anatomy note.
-- **Drill** — timed gesture practice from either the 3D figure (random figure, angle and
-  light each pose) or public-domain reference photos.
+- **Pose** — posable female/male figures with a 28-pose library (standing, motion, action,
+  low, seated); scrub through each motion, orbit, set camera views, and move the key light.
+- **Study** — an anatomy figure: pick a body region and the camera moves in close, and peel
+  from skin to skeleton.
+- **Drill** — timed gesture practice from either the 3D figure (new pose, angle and light
+  each time) or public-domain reference photos.
 
 ## Running it
 
@@ -25,6 +26,7 @@ Then open http://localhost:3000.
 | Space | Hide / show the interface (pauses during a drill) |
 | 1 – 4 | Front, ¾, Side, Back views |
 | L | Light controls |
+| R | Random pose and angle (Pose mode) |
 | Esc | Close / go back / end a drill |
 | → | Next pose during a drill |
 
@@ -39,5 +41,5 @@ Then open http://localhost:3000.
 
 ## Assets and licenses
 
-All bundled 3D models are CC0 (Blender Studio) and all reference photos are public domain
-(Eadweard Muybridge, 1887). Sources and details: [`reference/CREDITS.md`](reference/CREDITS.md).
+All bundled 3D models are CC0 (Quaternius, Blender Studio) and all reference photos are public
+domain (Eadweard Muybridge, 1887). Sources and details: [`reference/CREDITS.md`](reference/CREDITS.md).

@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useReducer } from "react";
-import { FIGURES, type FigureId } from "./figures";
+import { POSABLE_FIGURES, type FigureId } from "./figures";
 import { eligiblePhotos } from "./photos";
+import { POSES } from "./poses";
 
 /**
  * Timed drawing drills. All drill state lives in one reducer so the timer,
  * pause, skip and "next pose" logic can't drift out of sync.
  *
  * A drill draws from one of two sources:
- *  - "figure": the 3D figure, with a random figure / camera / light each pose
+ *  - "figure": the posable 3D figure — a new pose every time, plus (optionally)
+ *    a random figure / camera / light
  *  - "photos": public-domain reference photos, shuffled, no repeats
  */
 
@@ -33,6 +35,8 @@ export const RANDOMIZE_OPTIONS: { key: RandomizeKey; label: string }[] = [
 /** One randomized 3D setup for a single pose in the drill. */
 export type DrillPose = {
   figureId: FigureId;
+  poseId: string;
+  poseProgress: number;
   cameraAzimuth: number;
   cameraPolar: number;
   lightAzimuth: number;
@@ -81,8 +85,12 @@ function shuffle<T>(items: readonly T[]): T[] {
 }
 
 export function randomPose(): DrillPose {
+  const pose = pick(POSES);
   return {
-    figureId: pick(FIGURES).id,
+    figureId: pick(POSABLE_FIGURES).id,
+    poseId: pose.id,
+    // Mostly near the pose's most drawable moment, sometimes anywhere in the motion.
+    poseProgress: Math.random() < 0.6 ? pose.moment : Math.random(),
     cameraAzimuth: between(-180, 180),
     cameraPolar: between(62, 96),
     lightAzimuth: between(-160, 160),

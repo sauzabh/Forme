@@ -6,14 +6,20 @@ import { ContactShadows, Html, useGLTF } from "@react-three/drei";
 import CameraRig from "./CameraRig";
 import StudioLights from "./StudioLights";
 import { FigureModel, SkeletonModel } from "./FigureModel";
+import { PosedFigure } from "./PosedFigure";
 import ModelErrorBoundary from "./ModelErrorBoundary";
-import { FIGURES, type Figure } from "@/lib/figures";
+import { ALL_FIGURES, type Figure } from "@/lib/figures";
+import { POSE_LIBRARY_URL } from "@/lib/poses";
 import type { Shot } from "@/lib/camera";
 import type { Light } from "@/lib/lighting";
 import styles from "./FigureViewer.module.css";
 
+/** Which pose to show on a posable figure, and where in its motion. */
+export type PoseState = { id: string; progress: number };
+
 type FigureViewerProps = {
   figure: Figure;
+  pose: PoseState;
   showSkeleton: boolean;
   shot: Shot;
   light: Light;
@@ -25,11 +31,12 @@ type FigureViewerProps = {
  * and the camera. It only renders when something changes ("demand" mode),
  * so it stays light on battery while an artist is drawing from it.
  */
-export default function FigureViewer({ figure, showSkeleton, shot, light, onUserOrbit }: FigureViewerProps) {
-  // Quietly fetch the other figures after the first one is up, so switching is instant.
+export default function FigureViewer({ figure, pose, showSkeleton, shot, light, onUserOrbit }: FigureViewerProps) {
+  // Quietly fetch everything else after the first figure is up, so switching is instant.
   useEffect(() => {
+    useGLTF.preload(POSE_LIBRARY_URL);
     const timer = setTimeout(() => {
-      for (const f of FIGURES) {
+      for (const f of ALL_FIGURES) {
         useGLTF.preload(f.model);
         if (f.skeleton) useGLTF.preload(f.skeleton);
       }
@@ -49,9 +56,13 @@ export default function FigureViewer({ figure, showSkeleton, shot, light, onUser
 
         <ModelErrorBoundary height={figure.height} resetKey={figure.model}>
           <Suspense fallback={<LoadingLabel height={figure.height} />}>
-            <FigureModel url={figure.model} xray={showSkeleton && Boolean(figure.skeleton)} />
+            {figure.posable ? (
+              <PosedFigure url={figure.model} poseId={pose.id} progress={pose.progress} />
+            ) : (
+              <FigureModel url={figure.model} xray={showSkeleton && Boolean(figure.skeleton)} />
+            )}
           </Suspense>
-          {showSkeleton && figure.skeleton && (
+          {!figure.posable && showSkeleton && figure.skeleton && (
             <Suspense fallback={null}>
               <SkeletonModel url={figure.skeleton} />
             </Suspense>

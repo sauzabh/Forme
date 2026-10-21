@@ -37,13 +37,13 @@ TARGET_CLOTHED = 60
 
 def fetch(url, timeout=60):
     """GET with polite retries: honours Wikimedia's 429 Retry-After."""
-    for attempt in range(6):
+    for attempt in range(10):
         req = urllib.request.Request(url, headers={"User-Agent": UA})
         try:
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return r.read()
         except urllib.error.HTTPError as e:
-            if e.code not in (429, 503) or attempt == 5:
+            if e.code not in (429, 503) or attempt == 9:
                 raise
             wait = int(e.headers.get("Retry-After") or 0) or 5 * (attempt + 1)
             print(f"  rate limited, waiting {wait}s")
@@ -97,8 +97,12 @@ def main(download_dir, manifest_path):
     manifest = []
     for i in range(0, len(chosen), 40):
         batch = chosen[i:i + 40]
-        info = api({"action": "query", "titles": "|".join(t for _, t in batch), "prop": "imageinfo",
-                    "iiprop": "url|size|mime|extmetadata", "iiextmetadatafilter": "LicenseShortName"})
+        try:
+            info = api({"action": "query", "titles": "|".join(t for _, t in batch), "prop": "imageinfo",
+                        "iiprop": "url|size|mime|extmetadata", "iiextmetadatafilter": "LicenseShortName"})
+        except Exception as e:
+            print("skip batch (metadata failed)", e)
+            continue
         pages = {p["title"]: p for p in info["query"]["pages"].values()}
         for series, t in batch:
             p = pages.get(t)
@@ -119,8 +123,12 @@ def main(download_dir, manifest_path):
                 with open(out, "rb") as f:
                     data = f.read()
             else:
-                data = fetch(ii["url"])
-                time.sleep(0.5)
+                try:
+                    data = fetch(ii["url"])
+                except Exception as e:  # one bad file shouldn't stop the run
+                    print("skip (download failed)", t, e)
+                    continue
+                time.sleep(1.0)
             if not data.startswith(b"\xff\xd8\xff"):
                 print("skip (not a JPEG)", t)
                 continue
