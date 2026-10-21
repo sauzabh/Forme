@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Figura Studio",
+  title: "Forme",
   description: "A quiet, focused space for figure and anatomy study.",
 };
 

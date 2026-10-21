@@ -18,7 +18,7 @@ import urllib.parse
 import urllib.request
 
 API = "https://commons.wikimedia.org/w/api.php"
-UA = "FiguraStudio/0.1 (figure-drawing reference app; local build script)"
+UA = "Forme/0.1 (figure-drawing reference app; local build script)"
 
 QUERIES = [
     "walking", "running", "throwing", "jumping", "sitting down", "lifting",

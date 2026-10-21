@@ -1,4 +1,4 @@
-# Figura Studio
+# Forme
 
 A quiet, full-screen figure-drawing reference studio. A real sculpted human figure
 fills the screen; the controls float lightly around it and disappear with one key.

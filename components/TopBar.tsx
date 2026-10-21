@@ -1,3 +1,4 @@
+import Image from "next/image";
 import ModeSwitcher, { type Mode } from "./ModeSwitcher";
 import styles from "./TopBar.module.css";
 
@@ -16,7 +17,10 @@ export default function TopBar({ mode, onModeChange, onHideInterface }: TopBarPr
   return (
     <header className={styles.bar}>
       <div className={styles.side}>
-        <span className={styles.wordmark}>Figura</span>
+        <span className={styles.wordmark}>
+          <Image src="/brand/forme-logo.png" alt="" width={12} height={25} className={styles.logo} unoptimized preload />
+          Forme
+        </span>
       </div>
 
       <ModeSwitcher mode={mode} onModeChange={onModeChange} />

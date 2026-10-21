@@ -1,6 +1,6 @@
 """
 Convert Quaternius Universal Base Characters + Universal Animation Library
-(both CC0) into web files for Figura:
+(both CC0) into web files for Forme:
 
   <out>/models/figure-female.glb, figure-male.glb  rigged clay-ready bodies
   <out>/models/poses.glb                           shared pose/motion library
