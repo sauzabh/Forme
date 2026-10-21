@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local Claude Code tooling (dev-server preview config)
+/.claude/
+
+# original 3D source downloads (large; re-download via reference/CREDITS.md)
+/reference/source-models/

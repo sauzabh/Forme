@@ -1,0 +1,90 @@
+/**
+ * Design tokens for Figura Studio.
+ *
+ * This file is the single source of truth for color, type, spacing,
+ * radius, and shadow. Components should never write a raw color or
+ * pixel value for these — they should reference a variable from here.
+ * Change a value once, and every component using it updates.
+ */
+:root {
+  /* ---- Color ---- */
+  /* The app is full-bleed: --color-background fills the whole window.
+     --color-surface (white) is only for things that float ON TOP of
+     the background — panels, controls, cards — added in later phases. */
+  --color-background: #f5f5f2;
+  --color-surface: #ffffff;
+
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #6e6e73;
+  --color-text-tertiary: #8e8e93;
+
+  --color-divider: #d2d2d7;
+
+  /* The one restrained accent — use it sparingly (small indicators,
+     a selected state), never as a large fill. */
+  --color-accent: #6e8f82;
+
+  /* A faint neutral tint derived from the existing colors (not a new
+     hardcoded color) — used for inactive tracks: segmented-control
+     backgrounds, filter chips, thumbnail placeholders. */
+  --color-control-track: color-mix(in srgb, var(--color-text-primary) 4%, var(--color-background));
+
+  /* A light veil over the 3D scene behind centred cards (drill setup). */
+  --color-scrim: color-mix(in srgb, var(--color-background) 55%, transparent);
+
+  /* ---- Layout ---- */
+  /* Shared so the light panel can sit exactly beside the right toolbar. */
+  --toolbar-width: 60px;
+
+  /* ---- Radius ---- */
+  --radius-control: 8px; /* small controls: checkboxes, small chips */
+  --radius-button: 12px; /* buttons */
+  --radius-panel: 16px; /* panels, cards */
+  --radius-surface: 20px; /* large surfaces */
+  --radius-pill: 999px; /* fully-round — use sparingly */
+
+  /* ---- Shadow ---- */
+  /* Kept extremely subtle on purpose — shadows here exist to separate
+     a floating element from the background, not to decorate it. */
+  --shadow-control: 0 1px 2px rgba(29, 29, 31, 0.06);
+  --shadow-panel: 0 1px 3px rgba(29, 29, 31, 0.04), 0 6px 20px rgba(29, 29, 31, 0.05);
+
+  /* ---- Spacing ---- */
+  /* One consistent scale used everywhere instead of one-off pixel values. */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* ---- Typography ---- */
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Each spec gave a range (e.g. main title 32–40px); each value below
+     picks the middle of that range as a sensible default. Change the
+     one line here to shift every use of that text style at once. */
+  --text-title-size: 36px;
+  --text-title-weight: 600;
+  --text-title-tracking: -0.02em;
+
+  --text-section-title-size: 22px;
+  --text-section-title-weight: 600;
+  --text-section-title-tracking: -0.01em;
+
+  --text-body-size: 16px;
+  --text-body-weight: 400;
+
+  --text-secondary-size: 13px;
+  --text-secondary-weight: 400;
+
+  --text-meta-size: 11px;
+  --text-meta-weight: 500;
+  --text-meta-tracking: 0.08em;
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 180ms;
+  --duration-settle: 420ms;
+}

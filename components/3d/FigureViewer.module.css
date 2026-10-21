@@ -1,0 +1,12 @@
+.viewer {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+}
+
+.loading {
+  display: block;
+  white-space: nowrap;
+  font-size: var(--text-secondary-size);
+  color: var(--color-text-tertiary);
+}

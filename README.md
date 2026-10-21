@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Figura Studio
 
-## Getting Started
+A quiet, full-screen figure-drawing reference studio. A real sculpted human figure
+fills the screen; the controls float lightly around it and disappear with one key.
 
-First, run the development server:
+- **Pose** — orbit the figure, switch figures (realistic or simplified forms), set camera
+  views, move the key light, and peel to the skeleton (realistic male).
+- **Study** — pick a body region and the camera moves in close, with a short anatomy note.
+- **Drill** — timed gesture practice from either the 3D figure (random figure, angle and
+  light each pose) or public-domain reference photos.
+
+## Running it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Keyboard
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Key | Action |
+|---|---|
+| Space | Hide / show the interface (pauses during a drill) |
+| 1 – 4 | Front, ¾, Side, Back views |
+| L | Light controls |
+| Esc | Close / go back / end a drill |
+| → | Next pose during a drill |
 
-## Learn More
+## Project layout
 
-To learn more about Next.js, take a look at the following resources:
+- `components/` — the interface (one file per control, each with its own `.module.css`)
+- `components/3d/` — the 3D scene: lights, camera rig, model loading
+- `lib/` — plain data and logic: figures, camera views, light presets, regions, drill timer
+- `styles/tokens.css` — every colour, size, radius and shadow in one place
+- `public/models/`, `public/thumbnails/`, `public/photos/` — 3D figures and reference photos
+- `scripts/` — reproducible conversion/download scripts for those assets
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Assets and licenses
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+All bundled 3D models are CC0 (Blender Studio) and all reference photos are public domain
+(Eadweard Muybridge, 1887). Sources and details: [`reference/CREDITS.md`](reference/CREDITS.md).

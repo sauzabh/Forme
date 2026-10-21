@@ -1,0 +1,185 @@
+.panel {
+  pointer-events: auto;
+  position: absolute;
+  right: calc(var(--space-lg) + var(--toolbar-width) + var(--space-sm));
+  top: 50%;
+  transform: translateY(-50%);
+  width: 248px;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  animation: appear var(--duration-fast) var(--ease-standard);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(6px);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.title {
+  font-size: var(--text-body-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.readout {
+  flex: 1;
+  font-size: var(--text-meta-size);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.close {
+  align-self: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--color-control-track);
+  color: var(--color-text-primary);
+}
+
+.dial {
+  position: relative;
+  align-self: center;
+  width: 140px;
+  height: 140px;
+  margin-bottom: var(--space-sm);
+  border-radius: 50%;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+}
+
+.dial:active {
+  cursor: grabbing;
+}
+
+.dial:focus-visible .ring {
+  border-color: var(--color-accent);
+}
+
+.ring {
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--color-divider);
+  background: var(--color-control-track);
+}
+
+.ray {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ray line {
+  stroke: var(--color-accent);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  opacity: 0.7;
+}
+
+/* Top-down marker for the figure: a shoulder bar with a nose notch. */
+.figure {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 9px;
+  margin: -4.5px 0 0 -11px;
+  border-radius: 5px;
+  background: var(--color-text-secondary);
+}
+
+.figure::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+}
+
+.handle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 20%, transparent), var(--shadow-control);
+}
+
+.front {
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  transform: translateX(-50%);
+  font-size: var(--text-meta-size);
+  letter-spacing: var(--text-meta-tracking);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.rowLabel,
+.value {
+  font-size: var(--text-secondary-size);
+  color: var(--color-text-secondary);
+}
+
+.value {
+  width: 30px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.slider {
+  flex: 1;
+  accent-color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.presets :global(.chip) {
+  height: 28px;
+  padding: 0 10px;
+}

@@ -1,0 +1,60 @@
+.app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--color-background);
+}
+
+/* Everything that floats over the figure. The layer itself ignores the
+   mouse so orbiting works everywhere; each control opts back in. */
+.chrome {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--duration-settle) var(--ease-standard), visibility 0s;
+}
+
+.chromeHidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--duration-settle) var(--ease-standard), visibility 0s linear var(--duration-settle);
+}
+
+.hint {
+  position: absolute;
+  left: var(--space-lg);
+  bottom: calc(var(--space-lg) + 18px);
+  font-size: var(--text-meta-size);
+  color: var(--color-text-tertiary);
+}
+
+.reveal {
+  position: absolute;
+  right: var(--space-lg);
+  bottom: var(--space-lg);
+  height: 32px;
+  padding: 0 var(--space-md);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-control);
+  font-family: inherit;
+  font-size: var(--text-meta-size);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.reveal:hover,
+.reveal:focus-visible {
+  opacity: 1;
+}
+
+@media (max-width: 1100px) {
+  .hint {
+    display: none;
+  }
+}

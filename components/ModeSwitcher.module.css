@@ -1,0 +1,33 @@
+.track {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-control-track);
+  flex: none;
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  padding: 6px var(--space-md);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-secondary-size);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.active {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-control);
+}
