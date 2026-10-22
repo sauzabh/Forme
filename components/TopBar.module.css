@@ -38,21 +38,21 @@
 
 .iconButton {
   pointer-events: auto;
-  width: 40px;
-  height: 40px;
+  width: var(--toolbar-width);
+  height: var(--toolbar-width);
   border: none;
   border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  box-shadow: inset 0 0 0 1px var(--color-divider);
+  /* Same look as the round buttons in the right-hand column below it. */
+  background: var(--color-control-track);
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: color var(--duration-fast) var(--ease-standard);
+  transition: color var(--duration-fast) var(--ease-standard), background var(--duration-fast) var(--ease-standard);
 }
 
 .iconButton:hover {
   color: var(--color-text-primary);
-  background: var(--color-control-track);
+  background: var(--color-control-hover);
 }

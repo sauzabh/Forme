@@ -35,8 +35,10 @@
   --color-scrim: rgba(255, 255, 255, 0.62);
 
   /* ---- Layout ---- */
-  /* Shared so the light panel can sit exactly beside the right toolbar. */
-  --toolbar-width: 64px;
+  /* One width for every control in the right-hand column (view pill,
+     Light, Hair & clothes) and the top-right button above it, so they
+     line up as a single column. Panels sit exactly beside it. */
+  --toolbar-width: 48px;
 
   /* ---- Radius ---- */
   /* Generous, soft corners; anything you press is fully round. */

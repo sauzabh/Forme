@@ -30,27 +30,37 @@
   color: var(--color-text-tertiary);
 }
 
+/* Top right, exactly where the Hide button sits (the top bar is 68px tall),
+   at full strength so it's easy to find on an otherwise empty screen. */
 .reveal {
   position: absolute;
   right: var(--space-lg);
-  bottom: var(--space-lg);
-  height: 32px;
-  padding: 0 var(--space-md);
+  top: calc((68px - var(--toolbar-width)) / 2);
+  height: var(--toolbar-width);
+  padding: 0 18px 0 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: none;
   border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-panel);
+  background: var(--color-control-track);
   font-family: inherit;
-  font-size: var(--text-meta-size);
-  color: var(--color-text-secondary);
+  font-size: var(--text-secondary-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
   cursor: pointer;
-  opacity: 0.35;
-  transition: opacity var(--duration-fast) var(--ease-standard);
+  animation: revealIn var(--duration-settle) var(--ease-standard);
+  transition: background var(--duration-fast) var(--ease-standard);
 }
 
-.reveal:hover,
-.reveal:focus-visible {
-  opacity: 1;
+.reveal:hover {
+  background: var(--color-control-hover);
+}
+
+@keyframes revealIn {
+  from {
+    opacity: 0;
+  }
 }
 
 @media (max-width: 1100px) {

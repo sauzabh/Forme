@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { DURATIONS, FIGURE_OPTIONS, RANDOMIZE_OPTIONS, currentPhotoId, nextPhotoId, type Drill, type DrillSource } from "@/lib/useDrill";
+import { DRESS_OPTIONS, DURATIONS, FIGURE_OPTIONS, RANDOMIZE_OPTIONS, currentPhotoId, nextPhotoId, type Drill, type DrillSource } from "@/lib/useDrill";
 import { PHOTOS, PHOTO_CREDIT, getPhoto } from "@/lib/photos";
 import styles from "./DrillInterface.module.css";
 
@@ -145,21 +145,18 @@ function DrillSetup({ drill, onClose }: { drill: Drill; onClose: () => void }) {
           <div className={styles.options}>
             <div className={styles.row}>
               <span className={styles.label}>Model</span>
-              <div className={`${styles.segmented} ${styles.segmentedSmall}`} role="radiogroup" aria-label="Model">
-                {FIGURE_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={option.id === state.figures}
-                    className={`${styles.segment} ${option.id === state.figures ? styles.segmentActive : ""}`}
-                    onClick={() => drill.setFigures(option.id)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+              <Segmented label="Model" options={FIGURE_OPTIONS} value={state.figures} onChange={drill.setFigures} />
             </div>
+            <div className={styles.row}>
+              <span className={styles.label}>Wearing</span>
+              <Segmented label="Wearing" options={DRESS_OPTIONS} value={state.dress} onChange={drill.setDress} />
+            </div>
+            <Toggle
+              label="Hair"
+              detail="Buns and buzzed, or your picks in Pose"
+              on={state.hair}
+              onToggle={drill.toggleHair}
+            />
             <span className="text-meta">Change with each pose</span>
             {RANDOMIZE_OPTIONS.map((option) => (
               <Toggle
@@ -192,6 +189,35 @@ function DrillSetup({ drill, onClose }: { drill: Drill; onClose: () => void }) {
         </button>
         <span className={styles.hint}>While drawing: Space pauses · → next pose · Esc ends</span>
       </div>
+    </div>
+  );
+}
+
+function Segmented<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: { id: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className={`${styles.segmented} ${styles.segmentedSmall}`} role="radiogroup" aria-label={label}>
+      {options.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          role="radio"
+          aria-checked={option.id === value}
+          className={`${styles.segment} ${option.id === value ? styles.segmentActive : ""}`}
+          onClick={() => onChange(option.id)}
+        >
+          {option.label}
+        </button>
+      ))}
     </div>
   );
 }

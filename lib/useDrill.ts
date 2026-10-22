@@ -35,6 +35,18 @@ export const RANDOMIZE_OPTIONS: { key: RandomizeKey; label: string; detail: stri
 /** Which figure(s) a drill uses. */
 export type DrillFigures = "female" | "male" | "both";
 
+/** What the 3D model wears: nothing (the default for figure drawing), or
+    loose clothing — drapery to study folds. */
+export type DrillDress = "nude" | "drapery";
+
+export const DRESS_OPTIONS: { id: DrillDress; label: string }[] = [
+  { id: "nude", label: "Nude" },
+  { id: "drapery", label: "Drapery" },
+];
+
+/** The outfits used for drapery drills. */
+export const DRAPERY_OUTFITS = ["peasant", "ranger"] as const;
+
 export const FIGURE_OPTIONS: { id: DrillFigures; label: string }[] = [
   { id: "female", label: "Female" },
   { id: "male", label: "Male" },
@@ -48,6 +60,8 @@ export type DrillPose = {
   poseProgress: number;
   cameraAzimuth: number;
   cameraPolar: number;
+  /** Outfit for drapery drills; null when nude. */
+  outfit: (typeof DRAPERY_OUTFITS)[number] | null;
   /** Lighting style (a LIGHT_PRESETS id) — never the same twice in a row. */
   lightStyle: string;
   /** Light direction relative to the camera, so the style reads as intended
@@ -65,6 +79,8 @@ export type DrillState = {
   count: number;
   randomize: Record<RandomizeKey, boolean>;
   figures: DrillFigures;
+  dress: DrillDress;
+  hair: boolean;
   includeNude: boolean;
   index: number;
   secondsLeft: number;
@@ -79,6 +95,8 @@ type Action =
   | { type: "changeCount"; delta: number }
   | { type: "toggle"; key: RandomizeKey }
   | { type: "setFigures"; figures: DrillFigures }
+  | { type: "setDress"; dress: DrillDress }
+  | { type: "toggleHair" }
   | { type: "toggleNude" }
   | { type: "start"; pose: DrillPose; photoOrder: string[] }
   | { type: "tick"; next: DrillPose }
@@ -120,8 +138,14 @@ function cameraPolar() {
  * The next drill setup, chosen to differ clearly from the last one: a pose
  * not seen in the recent past, a camera at least 60° round from the last,
  * and a different lighting style. With both figures, it mostly alternates.
+ * For drapery, the outfit varies too.
  */
-export function randomPose(figures: DrillFigures, previous: DrillPose | null = null, recentPoseIds: readonly string[] = []): DrillPose {
+export function randomPose(
+  figures: DrillFigures,
+  dress: DrillDress = "nude",
+  previous: DrillPose | null = null,
+  recentPoseIds: readonly string[] = [],
+): DrillPose {
   const fresh = POSES.filter((p) => !recentPoseIds.includes(p.id));
   const pose = pick(fresh.length ? fresh : POSES);
 
@@ -135,6 +159,8 @@ export function randomPose(figures: DrillFigures, previous: DrillPose | null = n
     cameraAzimuth = between(-180, 180);
   }
 
+  const outfit = dress === "drapery" ? pick(DRAPERY_OUTFITS) : null;
+
   const style = pick(LIGHT_PRESETS.filter((p) => p.id !== previous?.lightStyle));
   const side = Math.random() < 0.5 ? -1 : 1;
 
@@ -145,6 +171,7 @@ export function randomPose(figures: DrillFigures, previous: DrillPose | null = n
     poseProgress: Math.random() < 0.6 ? pose.moment : Math.random(),
     cameraAzimuth,
     cameraPolar: cameraPolar(),
+    outfit,
     lightStyle: style.id,
     lightOffset: side * (style.azimuth + between(-12, 12)),
     lightElevation: Math.min(ELEVATION_MAX, Math.max(ELEVATION_MIN, style.elevation + between(-6, 6))),
@@ -168,6 +195,10 @@ function reducer(state: DrillState, action: Action): DrillState {
       return { ...state, randomize: { ...state.randomize, [action.key]: !state.randomize[action.key] } };
     case "setFigures":
       return { ...state, figures: action.figures };
+    case "setDress":
+      return { ...state, dress: action.dress };
+    case "toggleHair":
+      return { ...state, hair: !state.hair };
     case "toggleNude":
       return { ...state, includeNude: !state.includeNude };
     case "start":
@@ -202,6 +233,8 @@ const INITIAL: DrillState = {
   count: 20,
   randomize: { camera: true, light: true },
   figures: "both",
+  dress: "nude",
+  hair: true,
   includeNude: true,
   index: 0,
   secondsLeft: 0,
@@ -222,7 +255,7 @@ export function nextPhotoId(state: DrillState): string | null {
 
 export function useDrill() {
   const [state, dispatch] = useReducer(reducer, INITIAL);
-  const { source, includeNude, figures } = state;
+  const { source, includeNude, figures, dress } = state;
 
   // What the session has shown so far, so the next pose can avoid it.
   const previousRef = useRef<DrillPose | null>(null);
@@ -234,7 +267,10 @@ export function useDrill() {
     recentRef.current = [...recentRef.current, state.pose.poseId].slice(-14);
   }, [state.pose]);
 
-  const nextPose = useCallback(() => randomPose(figures, previousRef.current, recentRef.current), [figures]);
+  const nextPose = useCallback(
+    () => randomPose(figures, dress, previousRef.current, recentRef.current),
+    [figures, dress],
+  );
 
   // Restart the one-second tick for every new pose, so each pose gets its
   // full time (not whatever was left of the previous second).
@@ -253,6 +289,8 @@ export function useDrill() {
       changeCount: (delta: number) => dispatch({ type: "changeCount", delta }),
       toggle: (key: RandomizeKey) => dispatch({ type: "toggle", key }),
       setFigures: (next: DrillFigures) => dispatch({ type: "setFigures", figures: next }),
+      setDress: (next: DrillDress) => dispatch({ type: "setDress", dress: next }),
+      toggleHair: () => dispatch({ type: "toggleHair" }),
       toggleNude: () => dispatch({ type: "toggleNude" }),
       start: () => {
         previousRef.current = null;

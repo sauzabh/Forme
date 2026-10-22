@@ -1,7 +1,7 @@
 /**
- * Optional hair and clothing for the posable figures. Everything is off by
- * default — the bare figure is the reference — and each layer is a mesh
- * skinned to the figure's own skeleton, so it follows every pose.
+ * Optional hair and clothing for the posable figures. By default the
+ * figures are nude with simple hair (buns / buzzed), and each layer is a
+ * mesh skinned to the figure's own skeleton, so it follows every pose.
  *
  * - Hair: styles from Quaternius Universal Base Characters (CC0).
  * - Fitted: sportswear cut from the body itself (see export_appearance.py).
@@ -47,8 +47,8 @@ export type Appearance = {
 };
 
 export const DEFAULT_APPEARANCE: Appearance = {
-  hair: false,
-  hairStyle: { female: "long", male: "parted" },
+  hair: true,
+  hairStyle: { female: "buns", male: "buzzed" },
   clothing: "none",
 };
 

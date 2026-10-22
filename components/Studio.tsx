@@ -11,13 +11,14 @@ import PoseBrowser from "./PoseBrowser";
 import StudyPanel from "./StudyPanel";
 import DrillInterface from "./DrillInterface";
 import type { Mode } from "./ModeSwitcher";
-import { ANATOMY_FIGURE, getFigure, type FigureId } from "@/lib/figures";
+import { ANATOMY_FIGURE, POSABLE_FIGURES, getFigure, type FigureId } from "@/lib/figures";
 import { DEFAULT_APPEARANCE, dressedModel, visibleParts, type Appearance, type PosableId } from "@/lib/appearance";
 import { DEFAULT_POSE_ID, getPose, posesIn, type PoseCategory } from "@/lib/poses";
 import { VIEWS, viewShot, type Shot, type ViewId } from "@/lib/camera";
 import { DEFAULT_LIGHT, normalizeAngle, type Light } from "@/lib/lighting";
 import type { RegionId } from "@/lib/regions";
-import { useDrill } from "@/lib/useDrill";
+import { DRAPERY_OUTFITS, useDrill } from "@/lib/useDrill";
+import { preloadModel } from "./3d/models";
 import styles from "./Studio.module.css";
 
 const DEFAULT_VIEW: ViewId = "three-quarter";
@@ -70,15 +71,36 @@ export default function Studio() {
   // During a drill, randomized settings temporarily override the user's.
   const posableId: PosableId = drillPose ? drillPose.figureId : figureId === "male" ? "male" : "female";
   const baseFigure = mode === "study" ? ANATOMY_FIGURE : getFigure(posableId);
-  // Hair and clothing apply to the posable figures, in Pose and in Drill.
+  // Hair and clothing: the artist's own choice in Pose; in a drill, the
+  // drill's settings (hair on/off, nude or drapery — the outfit varying pose
+  // to pose) with the artist's chosen hairstyles.
+  const drillHair = drill.state.hair;
+  const shownAppearance = useMemo<Appearance>(
+    () =>
+      drillPose
+        ? { ...appearance, hair: drillHair, clothing: drillPose.outfit ?? "none" }
+        : appearance,
+    [drillPose, drillHair, appearance],
+  );
   const figure = useMemo(
-    () => (baseFigure.posable ? { ...baseFigure, model: dressedModel(baseFigure.model, appearance.clothing) } : baseFigure),
-    [baseFigure, appearance.clothing],
+    () =>
+      baseFigure.posable ? { ...baseFigure, model: dressedModel(baseFigure.model, shownAppearance.clothing) } : baseFigure,
+    [baseFigure, shownAppearance.clothing],
   );
   const parts = useMemo(
-    () => (baseFigure.posable ? visibleParts(appearance, posableId) : []),
-    [baseFigure.posable, appearance, posableId],
+    () => (baseFigure.posable ? visibleParts(shownAppearance, posableId) : []),
+    [baseFigure.posable, shownAppearance, posableId],
   );
+
+  // Drapery drills switch outfits pose to pose: fetch them up front so a
+  // new pose never waits on a download.
+  const drapery = mode === "drill" && drill.state.source === "figure" && drill.state.dress === "drapery";
+  useEffect(() => {
+    if (!drapery) return;
+    for (const f of POSABLE_FIGURES) {
+      for (const outfit of DRAPERY_OUTFITS) preloadModel(dressedModel(f.model, outfit));
+    }
+  }, [drapery]);
   const pose = useMemo<PoseState>(
     () => (drillPose ? { id: drillPose.poseId, progress: drillPose.poseProgress } : { id: poseId, progress: poseProgress }),
     [drillPose, poseId, poseProgress],
@@ -285,7 +307,11 @@ export default function Studio() {
       {mode === "drill" && <DrillInterface drill={drill} cardsHidden={chromeHidden} onClose={closeDrill} />}
 
       {chromeHidden && !drillActive && (
+        // Same spot as the Hide button, so the toggle is always found in one place.
         <button type="button" className={styles.reveal} onClick={() => setChromeHidden(false)} title="Show interface (Space)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
+          </svg>
           Show interface
         </button>
       )}
