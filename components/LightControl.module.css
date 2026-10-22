@@ -6,7 +6,10 @@
      pose library, scrolling inside instead of running under it. */
   top: 44%;
   transform: translateY(-50%);
-  max-height: calc(88% - 2 * 120px);
+  /* A temporary popup: it floats over the pose library rather than
+     squeezing to fit above it. */
+  z-index: 2;
+  max-height: calc(100% - 2 * 80px);
   overflow-y: auto;
   width: 264px;
   padding: 20px;

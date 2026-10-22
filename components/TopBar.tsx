@@ -5,7 +5,8 @@ import styles from "./TopBar.module.css";
 type TopBarProps = {
   mode: Mode;
   onModeChange: (mode: Mode) => void;
-  onHideInterface: () => void;
+  /** Left out where hiding makes no sense (the Drill setup card). */
+  onHideInterface?: () => void;
 };
 
 /**
@@ -26,17 +27,19 @@ export default function TopBar({ mode, onModeChange, onHideInterface }: TopBarPr
       </div>
 
       <div className={`${styles.side} ${styles.right}`}>
-        <button
-          type="button"
-          className={styles.iconButton}
-          onClick={onHideInterface}
-          title="Hide interface (Space)"
-          aria-label="Hide interface"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
-          </svg>
-        </button>
+        {onHideInterface && (
+          <button
+            type="button"
+            className={styles.iconButton}
+            onClick={onHideInterface}
+            title="Hide interface (Space)"
+            aria-label="Hide interface"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+            </svg>
+          </button>
+        )}
       </div>
     </header>
   );

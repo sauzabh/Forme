@@ -251,7 +251,49 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-height: 132px;
+}
+
+/* "Advanced": a quiet row that opens the 3D-figure extras. */
+.disclosure {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: 44px;
+  padding: 2px 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chevron {
+  flex: none;
+  color: var(--color-text-tertiary);
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.disclosure:hover .chevron {
+  color: var(--color-text-primary);
+}
+
+.advanced {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: unfold var(--duration-fast) var(--ease-standard);
+}
+
+@keyframes unfold {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 .options > :global(.text-meta) {

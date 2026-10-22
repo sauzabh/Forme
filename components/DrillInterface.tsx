@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Image from "next/image";
 import { DRESS_OPTIONS, DURATIONS, FIGURE_OPTIONS, RANDOMIZE_OPTIONS, currentPhotoId, nextPhotoId, type Drill, type DrillSource } from "@/lib/useDrill";
 import { PHOTOS, PHOTO_CREDIT, getPhoto } from "@/lib/photos";
@@ -142,32 +143,7 @@ function DrillSetup({ drill, onClose }: { drill: Drill; onClose: () => void }) {
         <hr className="divider" />
 
         {state.source === "figure" ? (
-          <div className={styles.options}>
-            <div className={styles.row}>
-              <span className={styles.label}>Model</span>
-              <Segmented label="Model" options={FIGURE_OPTIONS} value={state.figures} onChange={drill.setFigures} />
-            </div>
-            <div className={styles.row}>
-              <span className={styles.label}>Wearing</span>
-              <Segmented label="Wearing" options={DRESS_OPTIONS} value={state.dress} onChange={drill.setDress} />
-            </div>
-            <Toggle
-              label="Hair"
-              detail="Buns and buzzed, or your picks in Pose"
-              on={state.hair}
-              onToggle={drill.toggleHair}
-            />
-            <span className="text-meta">Change with each pose</span>
-            {RANDOMIZE_OPTIONS.map((option) => (
-              <Toggle
-                key={option.key}
-                label={option.label}
-                detail={option.detail}
-                on={state.randomize[option.key]}
-                onToggle={() => drill.toggle(option.key)}
-              />
-            ))}
-          </div>
+          <Advanced drill={drill} />
         ) : (
           <div className={styles.options}>
             <span className="text-meta">Photos</span>
@@ -189,6 +165,67 @@ function DrillSetup({ drill, onClose }: { drill: Drill; onClose: () => void }) {
         </button>
         <span className={styles.hint}>While drawing: Space pauses · → next pose · Esc ends</span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The 3D-figure extras, folded away so the card stays short: the defaults
+ * (both figures, nude, hair on, a new angle and light each pose) suit most
+ * sessions. A one-line summary shows what's set without opening it.
+ */
+function Advanced({ drill }: { drill: Drill }) {
+  const { state } = drill;
+  const [open, setOpen] = useState(false);
+  const model = FIGURE_OPTIONS.find((o) => o.id === state.figures)?.label ?? "Both";
+  const wearing = DRESS_OPTIONS.find((o) => o.id === state.dress)?.label ?? "Nude";
+  const changes = [state.randomize.camera && "angle", state.randomize.light && "light"].filter(Boolean).join(" and ");
+  const summary = [
+    state.figures === "both" ? "Female and male" : model,
+    wearing,
+    state.hair ? "Hair on" : "No hair",
+    changes ? `New ${changes} each pose` : "Fixed angle and light",
+  ].join(" · ");
+
+  return (
+    <div className={styles.options}>
+      <button
+        type="button"
+        className={styles.disclosure}
+        aria-expanded={open}
+        aria-controls="drill-advanced"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className={styles.toggleText}>
+          <span className={styles.label}>Advanced</span>
+          {!open && <span className={styles.toggleDetail}>{summary}</span>}
+        </span>
+        <svg className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div id="drill-advanced" className={styles.advanced}>
+          <div className={styles.row}>
+            <span className={styles.label}>Model</span>
+            <Segmented label="Model" options={FIGURE_OPTIONS} value={state.figures} onChange={drill.setFigures} />
+          </div>
+          <div className={styles.row}>
+            <span className={styles.label}>Wearing</span>
+            <Segmented label="Wearing" options={DRESS_OPTIONS} value={state.dress} onChange={drill.setDress} />
+          </div>
+          <Toggle label="Hair" detail="Buns and buzzed, or your picks in Pose" on={state.hair} onToggle={drill.toggleHair} />
+          {RANDOMIZE_OPTIONS.map((option) => (
+            <Toggle
+              key={option.key}
+              label={`New ${option.label.toLowerCase()} each pose`}
+              detail={option.detail}
+              on={state.randomize[option.key]}
+              onToggle={() => drill.toggle(option.key)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

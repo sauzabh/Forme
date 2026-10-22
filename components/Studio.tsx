@@ -225,7 +225,8 @@ export default function Studio() {
 
       if (event.key === " ") {
         event.preventDefault();
-        setChromeHidden((hidden) => !hidden);
+        // Nothing to hide on the Drill setup card; Space only matters mid-drill.
+        if (mode !== "drill") setChromeHidden((hidden) => !hidden);
       } else if (event.key === "Escape") {
         if (chromeHidden) setChromeHidden(false);
         else if (mode === "drill") closeDrill();
@@ -271,7 +272,11 @@ export default function Studio() {
       />
 
       <div className={`${styles.chrome} ${chromeVisible ? "" : styles.chromeHidden}`}>
-        <TopBar mode={mode} onModeChange={changeMode} onHideInterface={() => setChromeHidden(true)} />
+        <TopBar
+          mode={mode}
+          onModeChange={changeMode}
+          onHideInterface={mode === "drill" ? undefined : () => setChromeHidden(true)}
+        />
 
         {showStudioControls && (
           <>
@@ -328,9 +333,6 @@ export default function Studio() {
       {chromeHidden && !drillActive && (
         // Same spot as the Hide button, so the toggle is always found in one place.
         <button type="button" className={styles.reveal} onClick={() => setChromeHidden(false)} title="Show interface (Space)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
-          </svg>
           Show interface
         </button>
       )}
