@@ -6,11 +6,13 @@ import FigureViewer, { type PoseState } from "./3d/FigureViewer";
 import PeelControl, { type Layer } from "./PeelControl";
 import CameraControl from "./CameraControl";
 import LightControl from "./LightControl";
+import AppearanceControl from "./AppearanceControl";
 import PoseBrowser from "./PoseBrowser";
 import StudyPanel from "./StudyPanel";
 import DrillInterface from "./DrillInterface";
 import type { Mode } from "./ModeSwitcher";
 import { ANATOMY_FIGURE, getFigure, type FigureId } from "@/lib/figures";
+import { DEFAULT_APPEARANCE, dressedModel, visibleParts, type Appearance, type PosableId } from "@/lib/appearance";
 import { DEFAULT_POSE_ID, getPose, posesIn, type PoseCategory } from "@/lib/poses";
 import { VIEWS, viewShot, type Shot, type ViewId } from "@/lib/camera";
 import { DEFAULT_LIGHT, normalizeAngle, type Light } from "@/lib/lighting";
@@ -37,8 +39,18 @@ export default function Studio() {
   const [poseProgress, setPoseProgress] = useState(() => getPose(DEFAULT_POSE_ID).moment);
   const [layer, setLayer] = useState<Layer>("skin");
   const [light, setLight] = useState<Light>(DEFAULT_LIGHT);
-  const [lightOpen, setLightOpen] = useState(false);
+  // One side panel at a time: Light or Appearance.
+  const [panel, setPanel] = useState<"light" | "appearance" | null>(null);
+  const [appearance, setAppearance] = useState<Appearance>(DEFAULT_APPEARANCE);
   const [chromeHidden, setChromeHidden] = useState(false);
+  // The pose library's height, so the camera frames the figure above it.
+  const [browserHeight, setBrowserHeight] = useState(0);
+  const browserRef = useCallback((element: HTMLElement | null) => {
+    if (!element) return;
+    const observer = new ResizeObserver(() => setBrowserHeight(element.offsetHeight));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const [hasOrbited, setHasOrbited] = useState(false);
 
   // `shot` only changes on purpose (a button, a region, a drill pose), so
@@ -56,7 +68,17 @@ export default function Studio() {
   const randomize = drill.state.randomize;
 
   // During a drill, randomized settings temporarily override the user's.
-  const figure = mode === "study" ? ANATOMY_FIGURE : getFigure(drillPose ? drillPose.figureId : figureId);
+  const posableId: PosableId = drillPose ? drillPose.figureId : figureId === "male" ? "male" : "female";
+  const baseFigure = mode === "study" ? ANATOMY_FIGURE : getFigure(posableId);
+  // Hair and clothing apply to the posable figures, in Pose and in Drill.
+  const figure = useMemo(
+    () => (baseFigure.posable ? { ...baseFigure, model: dressedModel(baseFigure.model, appearance.clothing) } : baseFigure),
+    [baseFigure, appearance.clothing],
+  );
+  const parts = useMemo(
+    () => (baseFigure.posable ? visibleParts(appearance, posableId) : []),
+    [baseFigure.posable, appearance, posableId],
+  );
   const pose = useMemo<PoseState>(
     () => (drillPose ? { id: drillPose.poseId, progress: drillPose.poseProgress } : { id: poseId, progress: poseProgress }),
     [drillPose, poseId, poseProgress],
@@ -73,6 +95,17 @@ export default function Studio() {
       ? { azimuth: normalizeAngle(effectiveShot.azimuth + drillPose.lightOffset), elevation: drillPose.lightElevation }
       : light;
   const showSkeleton = mode === "study" && layer === "bone" && Boolean(figure.skeleton);
+  // Screen space the interface covers (px): the top bar, and along the
+  // bottom the pose library (Pose), the region bar (Study) or the drill
+  // controls. Stays put when the interface is hidden, so Space doesn't
+  // undo the artist's zoom.
+  const insets = useMemo(
+    () => ({
+      top: 72,
+      bottom: mode === "pose" ? browserHeight + 32 : mode === "study" ? 84 : 72,
+    }),
+    [mode, browserHeight],
+  );
 
   const selectView = useCallback((view: ViewId) => {
     setActiveView(view);
@@ -164,19 +197,21 @@ export default function Studio() {
       } else if (event.key === "Escape") {
         if (chromeHidden) setChromeHidden(false);
         else if (mode === "drill") closeDrill();
-        else if (lightOpen) setLightOpen(false);
+        else if (panel) setPanel(null);
         else if (studyRegion) selectRegion(null);
       } else if (mode !== "drill" && ["1", "2", "3", "4"].includes(event.key)) {
         selectView(VIEWS[Number(event.key) - 1].id);
       } else if (mode !== "drill" && event.key.toLowerCase() === "l") {
-        setLightOpen((open) => !open);
+        setPanel((open) => (open === "light" ? null : "light"));
+      } else if (mode === "pose" && event.key.toLowerCase() === "a") {
+        setPanel((open) => (open === "appearance" ? null : "appearance"));
       } else if (mode === "pose" && event.key.toLowerCase() === "r") {
         randomizePose();
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [drill, drillActive, chromeHidden, lightOpen, studyRegion, mode, selectRegion, selectView, randomizePose, closeDrill]);
+  }, [drill, drillActive, chromeHidden, panel, studyRegion, mode, selectRegion, selectView, randomizePose, closeDrill]);
 
   const chromeVisible = !chromeHidden && !drillActive;
   const showStudioControls = mode !== "drill";
@@ -186,9 +221,11 @@ export default function Studio() {
       <FigureViewer
         figure={figure}
         pose={pose}
+        parts={parts}
         showSkeleton={showSkeleton}
         shot={effectiveShot}
         light={effectiveLight}
+        insets={insets}
         onUserOrbit={handleUserOrbit}
       />
 
@@ -200,15 +237,28 @@ export default function Studio() {
             <CameraControl
               view={activeView}
               onViewChange={selectView}
-              lightOpen={lightOpen}
-              onToggleLight={() => setLightOpen((open) => !open)}
+              lightOpen={panel === "light"}
+              onToggleLight={() => setPanel((open) => (open === "light" ? null : "light"))}
+              appearanceOpen={panel === "appearance"}
+              onToggleAppearance={
+                mode === "pose" ? () => setPanel((open) => (open === "appearance" ? null : "appearance")) : undefined
+              }
             />
-            {lightOpen && <LightControl light={light} onChange={setLight} onClose={() => setLightOpen(false)} />}
+            {panel === "light" && <LightControl light={light} onChange={setLight} onClose={() => setPanel(null)} />}
+            {panel === "appearance" && mode === "pose" && (
+              <AppearanceControl
+                figure={posableId}
+                appearance={appearance}
+                onChange={(change) => setAppearance((current) => ({ ...current, ...change }))}
+                onClose={() => setPanel(null)}
+              />
+            )}
           </>
         )}
 
         {mode === "pose" && (
           <PoseBrowser
+            ref={browserRef}
             figureId={figureId}
             onFigureChange={setFigureId}
             category={poseCategory}

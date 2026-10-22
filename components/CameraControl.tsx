@@ -6,6 +6,9 @@ type CameraControlProps = {
   onViewChange: (view: ViewId) => void;
   lightOpen: boolean;
   onToggleLight: () => void;
+  /** Hair and clothing; left out where they don't apply (Study). */
+  appearanceOpen?: boolean;
+  onToggleAppearance?: () => void;
 };
 
 /**
@@ -31,12 +34,19 @@ function ViewIcon({ azimuth }: { azimuth: number }) {
 }
 
 /**
- * The right-hand controls: a vertical pill of camera views, and below it a
- * separate round Light button that opens and closes the lighting panel.
+ * The right-hand controls: a vertical pill of camera views, and below it
+ * round buttons that open the Light and Appearance panels.
  * `view` is null after free orbiting, so nothing stays highlighted once the
  * camera has been moved by hand.
  */
-export default function CameraControl({ view, onViewChange, lightOpen, onToggleLight }: CameraControlProps) {
+export default function CameraControl({
+  view,
+  onViewChange,
+  lightOpen,
+  onToggleLight,
+  appearanceOpen = false,
+  onToggleAppearance,
+}: CameraControlProps) {
   return (
     <div className={styles.dock}>
       <div className={styles.pill} role="group" aria-label="Camera view">
@@ -73,6 +83,22 @@ export default function CameraControl({ view, onViewChange, lightOpen, onToggleL
           <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" />
         </svg>
       </button>
+
+      {onToggleAppearance && (
+        <button
+          type="button"
+          className={`${styles.light} ${appearanceOpen ? styles.lightOn : ""}`}
+          aria-pressed={appearanceOpen}
+          aria-expanded={appearanceOpen}
+          aria-label="Hair and clothes"
+          title={appearanceOpen ? "Hide hair and clothes (A)" : "Hair and clothes (A)"}
+          onClick={onToggleAppearance}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true">
+            <path d="M9 4 4 6.5 2.5 11l3 1.2L7 10v10h10V10l1.5 2.2 3-1.2L20 6.5 15 4c-.5 1.5-1.6 2.3-3 2.3S9.5 5.5 9 4Z" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

@@ -9,13 +9,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 
 /* ---- Views: one tall pill ---- */
 
 .pill {
   width: 100%;
+  margin-bottom: var(--space-xs);
   padding: 4px;
   display: flex;
   flex-direction: column;

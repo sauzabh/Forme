@@ -35,6 +35,12 @@ type Vec3 = [number, number, number];
 /** The part of the scene to frame: the figure's real vertical extent. */
 export type Subject = { bottom: number; top: number; width: number };
 
+/** How much of the screen the interface covers at the top and bottom, as
+    fractions of its height. The figure is framed in the space between. */
+export type Insets = { top: number; bottom: number };
+
+const NO_INSETS: Insets = { top: 0.08, bottom: 0.06 };
+
 const toRad = (deg: number) => (deg * Math.PI) / 180;
 
 /**
@@ -42,7 +48,8 @@ const toRad = (deg: number) => (deg * Math.PI) / 180;
  * `subject` is what's actually visible (a seated pose is shorter than a
  * standing one); `figureHeight` is the figure's standing height, which
  * study regions are measured against. `fovDeg` is the vertical field of
- * view; `aspect` is width/height.
+ * view; `aspect` is width/height; `insets` is the screen the interface
+ * covers, so the figure lands in the clear space rather than behind it.
  */
 export function shotPose(
   shot: Shot,
@@ -50,6 +57,7 @@ export function shotPose(
   figureHeight: number,
   fovDeg: number,
   aspect: number,
+  insets: Insets = NO_INSETS,
 ): { position: Vec3; target: Vec3; azimuth: number; polar: number; distance: number } {
   const vHalf = Math.tan(toRad(fovDeg) / 2);
   const hHalf = vHalf * aspect;
@@ -67,15 +75,23 @@ export function shotPose(
     azimuth = region.azimuth ?? azimuth;
     polar = region.polar ?? polar;
   } else {
-    // Sit the subject above centre so the pose library along the bottom
-    // never covers the feet, and leave breathing room above the head.
+    // Fill most of the clear band between the top bar and whatever covers
+    // the bottom (the pose library), and centre the subject in that band.
     // Short poses (seated, crouching) get a floor so they aren't framed
     // too tightly.
+    const bandTop = insets.top;
+    const bandBottom = 1 - insets.bottom;
+    const band = Math.max(0.3, bandBottom - bandTop);
     const height = Math.max(subject.top - subject.bottom, figureHeight * 0.55);
-    target = [0, subject.bottom + height * 0.4, 0];
-    const byHeight = (height * 0.5) / (vHalf * 0.68);
+    const byHeight = height / (2 * vHalf * band * 0.86);
     const byWidth = (subject.width * 0.5) / (hHalf * 0.6);
     distance = Math.max(byHeight, byWidth);
+    // A point appears below the screen's centre by (target − y) / (2·d·tan½fov)
+    // of its height; solve for the target that puts the subject's middle at
+    // the band's middle.
+    const bandCentre = (bandTop + bandBottom) / 2;
+    const middle = (subject.bottom + subject.top) / 2;
+    target = [0, middle + (bandCentre - 0.5) * 2 * distance * vHalf, 0];
   }
 
   const a = toRad(azimuth);

@@ -17,6 +17,8 @@ type PoseBrowserProps = {
   progress: number;
   onProgressChange: (progress: number) => void;
   onRandom: () => void;
+  /** Lets the studio measure the panel, so the camera frames above it. */
+  ref?: React.Ref<HTMLElement>;
 };
 
 /**
@@ -33,6 +35,7 @@ export default function PoseBrowser({
   progress,
   onProgressChange,
   onRandom,
+  ref,
 }: PoseBrowserProps) {
   const visible = posesIn(category);
   const current = getPose(poseId);
@@ -45,7 +48,7 @@ export default function PoseBrowser({
   }, [poseId, category]);
 
   return (
-    <section className={styles.browser} aria-label="Pose library">
+    <section ref={ref} className={styles.browser} aria-label="Pose library">
       <div className={styles.header}>
         <div className={styles.segmented} role="radiogroup" aria-label="Figure">
           {POSABLE_FIGURES.map((figure) => (

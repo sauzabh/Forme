@@ -15,6 +15,9 @@ type CameraRigProps = {
   shot: Shot;
   subject: Subject;
   figureHeight: number;
+  /** Pixels the interface covers at the top and bottom of the screen. */
+  insetTop: number;
+  insetBottom: number;
   onUserOrbit: () => void;
 };
 
@@ -27,7 +30,7 @@ type CameraRigProps = {
  * Dragging orbits, scrolling zooms toward the cursor; panning is off so the
  * figure can't be lost off-screen.
  */
-export default function CameraRig({ shot, subject, figureHeight, onUserOrbit }: CameraRigProps) {
+export default function CameraRig({ shot, subject, figureHeight, insetTop, insetBottom, onUserOrbit }: CameraRigProps) {
   const controlsRef = useRef<CameraControlsImpl>(null);
   const lastShot = useRef<Shot | null>(null);
   const get = useThree((state) => state.get);
@@ -58,6 +61,7 @@ export default function CameraRig({ shot, subject, figureHeight, onUserOrbit }: 
       figureHeight,
       (camera as PerspectiveCamera).fov,
       size.width / size.height,
+      { top: insetTop / size.height, bottom: insetBottom / size.height },
     );
 
     // Turn the short way round: after free orbiting the current angle can
@@ -70,7 +74,7 @@ export default function CameraRig({ shot, subject, figureHeight, onUserOrbit }: 
     controls.setTarget(...pose.target, true);
     controls.rotateTo(current + delta, toRad(pose.polar), true);
     controls.dollyTo(pose.distance, true);
-  }, [shot, bottom, top, width, figureHeight, get]);
+  }, [shot, bottom, top, width, figureHeight, insetTop, insetBottom, get]);
 
   return (
     <CameraControls

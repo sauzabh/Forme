@@ -1,0 +1,155 @@
+/* Same placement as the Light panel: beside the dock, on its centre line. */
+.panel {
+  pointer-events: auto;
+  position: absolute;
+  right: calc(var(--space-lg) + var(--toolbar-width) + var(--space-sm));
+  top: 44%;
+  transform: translateY(-50%);
+  max-height: calc(88% - 2 * 120px);
+  overflow-y: auto;
+  width: 264px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  animation: appear var(--duration-fast) var(--ease-standard);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(6px);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--text-body-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--color-control-track);
+  color: var(--color-text-primary);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  font-size: var(--text-body-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.switch {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--color-divider);
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.switchOn {
+  background: var(--color-text-primary);
+}
+
+.knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-control);
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.switchOn .knob {
+  transform: translateX(16px);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chips :global(.chip) {
+  height: 30px;
+  padding: 0 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 16px;
+  background: var(--color-control-track);
+}
+
+.option {
+  height: 34px;
+  border: none;
+  border-radius: 13px;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--text-secondary-size);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.option:hover {
+  color: var(--color-text-primary);
+}
+
+.optionActive,
+.optionActive:hover {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-control);
+}
+
+.detail {
+  font-size: var(--text-meta-size);
+  color: var(--color-text-tertiary);
+}

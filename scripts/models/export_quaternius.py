@@ -3,6 +3,8 @@ Convert Quaternius Universal Base Characters + Universal Animation Library
 (both CC0) into web files for Forme:
 
   <out>/models/figure-female.glb, figure-male.glb  rigged clay-ready bodies
+                                                   (superseded by export_appearance.py,
+                                                   which adds hair and clothing)
   <out>/models/poses.glb                           shared pose/motion library
   <out>/thumbnails/poses/<id>.png                  clay thumbnail per pose
   <out>/poses.json                                 pose metadata for the app

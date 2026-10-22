@@ -6,6 +6,7 @@ import {
   AnimationClip,
   AnimationMixer,
   Box3,
+  DoubleSide,
   Mesh,
   SkinnedMesh,
   MeshStandardMaterial,
@@ -17,11 +18,25 @@ import {
 } from "three";
 import { clone as cloneSkinned } from "three/addons/utils/SkeletonUtils.js";
 import { POSE_LIBRARY_URL } from "@/lib/poses";
+import { isOptionalPart } from "@/lib/appearance";
 import type { Subject } from "@/lib/camera";
 import { useModel } from "./models";
 
-const SKIN_COLOR = "#d4d4d4";
 const HIPS = "pelvis";
+
+/** Clay tints by material role (named in export_appearance.py): skin is the
+    lightest, clothing a step darker, hair darker again — all neutral grey. */
+const CLAY = {
+  Skin: { color: "#d4d4d4", roughness: 0.68 },
+  Cloth: { color: "#9c9c9c", roughness: 0.85 },
+  Hair: { color: "#6a6a6a", roughness: 0.75 },
+} as const;
+
+function clayFor(materialName: string) {
+  if (materialName.startsWith("Hair")) return CLAY.Hair;
+  if (materialName.startsWith("Cloth")) return CLAY.Cloth;
+  return CLAY.Skin;
+}
 
 /**
  * Retarget library motions onto a figure with different proportions.
@@ -87,6 +102,8 @@ type PosedFigureProps = {
   poseId: string;
   /** Where in the motion to freeze, 0 (start) to 1 (end). */
   progress: number;
+  /** Optional meshes (hair, fitted clothes) to show; all others stay hidden. */
+  parts: string[];
   /** Reports the posed figure's real extent so the camera can frame it. */
   onFramed: (subject: Subject) => void;
 };
@@ -96,7 +113,7 @@ function measure(figure: Object3D): Subject {
   figure.updateMatrixWorld(true);
   const box = new Box3();
   figure.traverse((child) => {
-    if (child instanceof SkinnedMesh) {
+    if (child instanceof SkinnedMesh && child.visible) {
       child.computeBoundingBox(); // accounts for the current pose
       if (child.boundingBox) box.union(child.boundingBox.clone().applyMatrix4(child.matrixWorld));
     }
@@ -113,7 +130,7 @@ function measure(figure: Object3D): Subject {
  * The model is cloned so its clay material and pose never leak into the
  * shared loader cache.
  */
-export function PosedFigure({ url, poseId, progress, onFramed }: PosedFigureProps) {
+export function PosedFigure({ url, poseId, progress, parts, onFramed }: PosedFigureProps) {
   const { scene } = useModel(url);
   const library = useModel(POSE_LIBRARY_URL);
   const invalidate = useThree((state) => state.invalidate);
@@ -124,12 +141,15 @@ export function PosedFigure({ url, poseId, progress, onFramed }: PosedFigureProp
     copy.traverse((child) => {
       if (!(child instanceof Mesh)) return;
       const original = child.material as MeshStandardMaterial;
+      const tint = clayFor(original.name);
       const clay = new MeshStandardMaterial({
-        color: SKIN_COLOR,
-        roughness: 0.68,
+        color: tint.color,
+        roughness: tint.roughness,
         metalness: 0,
-        // Keep the sculpted surface detail (muscle definition) from the model.
+        // Keep the sculpted surface detail (muscles, cloth folds) from the model.
         normalMap: original.normalMap ?? null,
+        // Hair and clothing are open shells; show their inner side at the edges.
+        ...(tint === CLAY.Skin ? {} : { side: DoubleSide }),
       });
       created.push(clay);
       child.material = clay;
@@ -148,6 +168,16 @@ export function PosedFigure({ url, poseId, progress, onFramed }: PosedFigureProp
   );
 
   const mixer = useMemo(() => new AnimationMixer(figure), [figure]);
+
+  // Show only the appearance layers that are switched on.
+  const partsKey = parts.join(",");
+  useLayoutEffect(() => {
+    const shown = new Set(partsKey ? partsKey.split(",") : []);
+    figure.traverse((child) => {
+      if (child instanceof Mesh && isOptionalPart(child.name)) child.visible = shown.has(child.name);
+    });
+    invalidate();
+  }, [figure, partsKey, invalidate]);
 
   useEffect(
     () => () => {

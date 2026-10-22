@@ -21,9 +21,13 @@ export type PoseState = { id: string; progress: number };
 type FigureViewerProps = {
   figure: Figure;
   pose: PoseState;
+  /** Optional hair / clothing meshes to show on a posable figure. */
+  parts: string[];
   showSkeleton: boolean;
   shot: Shot;
   light: Light;
+  /** Pixels the interface covers at the top and bottom; the camera frames the figure between. */
+  insets: { top: number; bottom: number };
   onUserOrbit: () => void;
 };
 
@@ -32,7 +36,7 @@ type FigureViewerProps = {
  * and the camera. It only renders when something changes ("demand" mode),
  * so it stays light on battery while an artist is drawing from it.
  */
-export default function FigureViewer({ figure, pose, showSkeleton, shot, light, onUserOrbit }: FigureViewerProps) {
+export default function FigureViewer({ figure, pose, parts, showSkeleton, shot, light, insets, onUserOrbit }: FigureViewerProps) {
   // What the camera frames: a posed figure's measured extent once known,
   // otherwise the figure standing.
   const [measured, setMeasured] = useState<{ key: string; subject: Subject } | null>(null);
@@ -69,7 +73,7 @@ export default function FigureViewer({ figure, pose, showSkeleton, shot, light, 
         <ModelErrorBoundary height={figure.height} resetKey={figure.model}>
           <Suspense fallback={<LoadingLabel height={figure.height} />}>
             {figure.posable ? (
-              <PosedFigure url={figure.model} poseId={pose.id} progress={pose.progress} onFramed={handleFramed} />
+              <PosedFigure url={figure.model} poseId={pose.id} progress={pose.progress} parts={parts} onFramed={handleFramed} />
             ) : (
               <FigureModel url={figure.model} xray={showSkeleton && Boolean(figure.skeleton)} />
             )}
@@ -89,7 +93,14 @@ export default function FigureViewer({ figure, pose, showSkeleton, shot, light, 
         {/* Soft grounding shadow right under the feet. */}
         <ContactShadows position={[0, 0.002, 0]} scale={2.4} resolution={512} blur={2.6} far={0.8} opacity={0.32} color="#1a1a1a" />
 
-        <CameraRig shot={shot} subject={subject} figureHeight={figure.height} onUserOrbit={onUserOrbit} />
+        <CameraRig
+          shot={shot}
+          subject={subject}
+          figureHeight={figure.height}
+          insetTop={insets.top}
+          insetBottom={insets.bottom}
+          onUserOrbit={onUserOrbit}
+        />
       </Canvas>
     </div>
   );
