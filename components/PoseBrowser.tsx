@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { POSABLE_FIGURES, type FigureId } from "@/lib/figures";
 import { POSE_CATEGORIES, getPose, posesIn, type PoseCategory } from "@/lib/poses";
-import FillSlider from "./FillSlider";
+import TickSlider from "./TickSlider";
 import styles from "./PoseBrowser.module.css";
 
 type PoseBrowserProps = {
@@ -103,13 +103,12 @@ export default function PoseBrowser({
         })}
       </div>
 
-      <FillSlider
-        compact
+      <TickSlider
         label="Motion"
         min={0}
         max={1000}
         value={Math.round(progress * 1000)}
-        display={current.label}
+        display={String(Math.round(progress * 100))}
         onChange={(value) => onProgressChange(value / 1000)}
         ariaLabel={`Scrub through ${current.label}`}
       />
