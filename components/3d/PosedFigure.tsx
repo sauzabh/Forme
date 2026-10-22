@@ -19,7 +19,8 @@ import {
 import { clone as cloneSkinned } from "three/addons/utils/SkeletonUtils.js";
 import { POSE_LIBRARY_URL } from "@/lib/poses";
 import { isOptionalPart } from "@/lib/appearance";
-import type { Subject } from "@/lib/camera";
+import type { Subject, Vec3 } from "@/lib/camera";
+import type { RegionId } from "@/lib/regions";
 import { useModel } from "./models";
 
 const HIPS = "pelvis";
@@ -31,6 +32,9 @@ const CLAY = {
   Cloth: { color: "#9c9c9c", roughness: 0.85 },
   Hair: { color: "#6a6a6a", roughness: 0.75 },
 } as const;
+
+/** The Muscle layer: a muted muscle tint and deeper sculpted forms. */
+const MUSCLE = { color: "#b8826f", roughness: 0.5, normalScale: 2.4 };
 
 function clayFor(materialName: string) {
   if (materialName.startsWith("Hair")) return CLAY.Hair;
@@ -104,9 +108,40 @@ type PosedFigureProps = {
   progress: number;
   /** Optional meshes (hair, fitted clothes) to show; all others stay hidden. */
   parts: string[];
+  /** Study's Muscle layer: tint the skin and deepen its muscle forms. */
+  muscle?: boolean;
   /** Reports the posed figure's real extent so the camera can frame it. */
   onFramed: (subject: Subject) => void;
 };
+
+/** Where each study region sits on a rigged figure: the mean of these
+    joints, nudged by an offset (metres) toward the region's centre. */
+const LANDMARKS: Record<RegionId, { bones: string[]; offset?: Vec3 }> = {
+  skull: { bones: ["Head"], offset: [0, 0.09, 0.02] },
+  ribcage: { bones: ["spine_03"], offset: [0, 0.04, 0.03] },
+  shoulder: { bones: ["upperarm_l"] },
+  hand: { bones: ["hand_l", "middle_01_l"] },
+  pelvis: { bones: ["pelvis"] },
+  knee: { bones: ["calf_l"], offset: [0, 0, 0.03] },
+  foot: { bones: ["foot_l", "ball_l"] },
+};
+
+function findLandmarks(figure: Object3D): Partial<Record<RegionId, Vec3>> {
+  const found: Partial<Record<RegionId, Vec3>> = {};
+  const point = new Vector3();
+  for (const [id, { bones, offset = [0, 0, 0] }] of Object.entries(LANDMARKS) as [RegionId, (typeof LANDMARKS)[RegionId]][]) {
+    const sum = new Vector3();
+    let count = 0;
+    for (const name of bones) {
+      const bone = figure.getObjectByName(name);
+      if (!bone) continue;
+      sum.add(bone.getWorldPosition(point));
+      count++;
+    }
+    if (count) found[id] = [sum.x / count + offset[0], sum.y / count + offset[1], sum.z / count + offset[2]];
+  }
+  return found;
+}
 
 /** Measure a skinned figure in its current pose. */
 function measure(figure: Object3D): Subject {
@@ -122,6 +157,7 @@ function measure(figure: Object3D): Subject {
     bottom: Math.max(0, box.min.y),
     top: box.max.y,
     width: Math.max(box.max.x - box.min.x, box.max.z - box.min.z),
+    landmarks: findLandmarks(figure),
   };
 }
 
@@ -130,14 +166,15 @@ function measure(figure: Object3D): Subject {
  * The model is cloned so its clay material and pose never leak into the
  * shared loader cache.
  */
-export function PosedFigure({ url, poseId, progress, parts, onFramed }: PosedFigureProps) {
+export function PosedFigure({ url, poseId, progress, parts, muscle = false, onFramed }: PosedFigureProps) {
   const { scene } = useModel(url);
   const library = useModel(POSE_LIBRARY_URL);
   const invalidate = useThree((state) => state.invalidate);
 
-  const { figure, materials } = useMemo(() => {
+  const { figure, materials, skin } = useMemo(() => {
     const copy = cloneSkinned(scene);
     const created: MeshStandardMaterial[] = [];
+    const skinMaterials: MeshStandardMaterial[] = [];
     copy.traverse((child) => {
       if (!(child instanceof Mesh)) return;
       const original = child.material as MeshStandardMaterial;
@@ -152,14 +189,27 @@ export function PosedFigure({ url, poseId, progress, parts, onFramed }: PosedFig
         ...(tint === CLAY.Skin ? {} : { side: DoubleSide }),
       });
       created.push(clay);
+      if (tint === CLAY.Skin) skinMaterials.push(clay);
       child.material = clay;
       child.castShadow = true;
       child.receiveShadow = true;
       // Posed limbs can leave the rest-pose bounds; never cull the figure.
       child.frustumCulled = false;
     });
-    return { figure: copy, materials: created };
+    return { figure: copy, materials: created, skin: skinMaterials };
   }, [scene]);
+
+  useLayoutEffect(() => {
+    for (const m of skin) {
+      m.setValues({
+        color: muscle ? MUSCLE.color : CLAY.Skin.color,
+        roughness: muscle ? MUSCLE.roughness : CLAY.Skin.roughness,
+      });
+      const depth = muscle ? MUSCLE.normalScale : 1;
+      m.normalScale.set(depth, depth);
+    }
+    invalidate();
+  }, [skin, muscle, invalidate]);
 
   // `scene` is the untouched cached original, so its hips are the rest pose.
   const clips = useMemo(

@@ -21,7 +21,7 @@ export default function StudyPanel({ region, onRegionChange }: StudyPanelProps) 
         <p className="text-secondary">
           {current
             ? current.note
-            : "Choose a part of the body below and the camera moves in close. Drag to look around it."}
+            : "Pick a part of the body below, or step through with ← →. Peel the layers with S, M and B."}
         </p>
       </div>
 

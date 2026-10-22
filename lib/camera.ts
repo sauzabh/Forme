@@ -30,10 +30,16 @@ export function viewShot(view: ViewId): Shot {
   return { azimuth: found.azimuth, polar: VIEW_POLAR, focus: null };
 }
 
-type Vec3 = [number, number, number];
+export type Vec3 = [number, number, number];
 
-/** The part of the scene to frame: the figure's real vertical extent. */
-export type Subject = { bottom: number; top: number; width: number };
+/** The part of the scene to frame: the figure's real vertical extent, and
+    for a posed figure, where each study region actually is. */
+export type Subject = {
+  bottom: number;
+  top: number;
+  width: number;
+  landmarks?: Partial<Record<RegionId, Vec3>>;
+};
 
 /** How much of the screen the interface covers at the top and bottom, as
     fractions of its height. The figure is framed in the space between. */
@@ -69,9 +75,10 @@ export function shotPose(
 
   if (shot.focus) {
     const region = getRegion(shot.focus);
-    target = [region.x * figureHeight, region.y * figureHeight, region.z * figureHeight];
-    const radius = region.radius * figureHeight;
-    distance = radius / Math.min(vHalf, hHalf);
+    target = subject.landmarks?.[region.id] ?? [region.x * figureHeight, region.y * figureHeight, region.z * figureHeight];
+    // A little room around the region, and clear of the region bar below.
+    const radius = region.radius * figureHeight * 1.35;
+    distance = radius / (Math.min(vHalf, hHalf) * (1 - insets.top - insets.bottom));
     azimuth = region.azimuth ?? azimuth;
     polar = region.polar ?? polar;
   } else {

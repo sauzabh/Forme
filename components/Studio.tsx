@@ -16,7 +16,7 @@ import { DEFAULT_APPEARANCE, dressedModel, visibleParts, type Appearance, type P
 import { DEFAULT_POSE_ID, getPose, posesIn, type PoseCategory } from "@/lib/poses";
 import { VIEWS, viewShot, type Shot, type ViewId } from "@/lib/camera";
 import { DEFAULT_LIGHT, normalizeAngle, type Light } from "@/lib/lighting";
-import type { RegionId } from "@/lib/regions";
+import { REGIONS, type RegionId } from "@/lib/regions";
 import { DRAPERY_OUTFITS, useDrill } from "@/lib/useDrill";
 import { preloadModel } from "./3d/models";
 import styles from "./Studio.module.css";
@@ -27,8 +27,9 @@ const DEFAULT_VIEW: ViewId = "three-quarter";
  * The whole studio. The 3D figure fills the window; every control floats
  * on top of it. All app state lives here and flows down as props.
  *
- * Pose and Drill use the posable figures; Study uses the anatomy figure,
- * which is the one with a skeleton for the Bone layer.
+ * Pose and Drill use the posable figures. Study shows the muscular male
+ * standing for its Skin and Muscle layers, and the anatomy figure (the one
+ * with a fitted skeleton) for Bone.
  */
 export default function Studio() {
   const [mode, setMode] = useState<Mode>("pose");
@@ -70,7 +71,8 @@ export default function Studio() {
 
   // During a drill, randomized settings temporarily override the user's.
   const posableId: PosableId = drillPose ? drillPose.figureId : figureId === "male" ? "male" : "female";
-  const baseFigure = mode === "study" ? ANATOMY_FIGURE : getFigure(posableId);
+  const studying = mode === "study";
+  const baseFigure = studying ? (layer === "bone" ? ANATOMY_FIGURE : getFigure("male")) : getFigure(posableId);
   // Hair and clothing: the artist's own choice in Pose; in a drill, the
   // drill's settings (hair on/off, nude or drapery — the outfit varying pose
   // to pose) with the artist's chosen hairstyles.
@@ -84,12 +86,15 @@ export default function Studio() {
   );
   const figure = useMemo(
     () =>
-      baseFigure.posable ? { ...baseFigure, model: dressedModel(baseFigure.model, shownAppearance.clothing) } : baseFigure,
-    [baseFigure, shownAppearance.clothing],
+      baseFigure.posable && !studying
+        ? { ...baseFigure, model: dressedModel(baseFigure.model, shownAppearance.clothing) }
+        : baseFigure,
+    [baseFigure, studying, shownAppearance.clothing],
   );
   const parts = useMemo(
-    () => (baseFigure.posable ? visibleParts(shownAppearance, posableId) : []),
-    [baseFigure.posable, shownAppearance, posableId],
+    // Study shows the bare figure: no hair or clothing over the anatomy.
+    () => (baseFigure.posable && !studying ? visibleParts(shownAppearance, posableId) : []),
+    [baseFigure.posable, studying, shownAppearance, posableId],
   );
 
   // Drapery drills switch outfits pose to pose: fetch them up front so a
@@ -102,8 +107,13 @@ export default function Studio() {
     }
   }, [drapery]);
   const pose = useMemo<PoseState>(
-    () => (drillPose ? { id: drillPose.poseId, progress: drillPose.poseProgress } : { id: poseId, progress: poseProgress }),
-    [drillPose, poseId, poseProgress],
+    () =>
+      drillPose
+        ? { id: drillPose.poseId, progress: drillPose.poseProgress }
+        : studying
+          ? { id: DEFAULT_POSE_ID, progress: 0 } // a relaxed stand, every region in view
+          : { id: poseId, progress: poseProgress },
+    [drillPose, studying, poseId, poseProgress],
   );
   const drillShot = useMemo<Shot | null>(
     () => (drillPose && randomize.camera ? { azimuth: drillPose.cameraAzimuth, polar: drillPose.cameraPolar, focus: null } : null),
@@ -229,6 +239,14 @@ export default function Studio() {
         setPanel((open) => (open === "appearance" ? null : "appearance"));
       } else if (mode === "pose" && event.key.toLowerCase() === "r") {
         randomizePose();
+      } else if (mode === "study" && ["s", "m", "b"].includes(event.key.toLowerCase())) {
+        setLayer(({ s: "skin", m: "muscle", b: "bone" } as const)[event.key.toLowerCase() as "s" | "m" | "b"]);
+      } else if (mode === "study" && (event.key === "ArrowRight" || event.key === "ArrowLeft")) {
+        // Step through the regions; "Full figure" sits before the first.
+        const ids: (RegionId | null)[] = [null, ...REGIONS.map((r) => r.id)];
+        const step = event.key === "ArrowRight" ? 1 : -1;
+        const next = (ids.indexOf(studyRegion) + step + ids.length) % ids.length;
+        selectRegion(ids[next]);
       }
     }
     window.addEventListener("keydown", onKeyDown);
@@ -244,6 +262,7 @@ export default function Studio() {
         figure={figure}
         pose={pose}
         parts={parts}
+        muscle={studying && layer === "muscle"}
         showSkeleton={showSkeleton}
         shot={effectiveShot}
         light={effectiveLight}
@@ -294,7 +313,7 @@ export default function Studio() {
         )}
         {mode === "study" && (
           <>
-            <PeelControl layer={layer} onLayerChange={setLayer} boneAvailable={Boolean(figure.skeleton)} />
+            <PeelControl layer={layer} onLayerChange={setLayer} />
             <StudyPanel region={studyRegion} onRegionChange={selectRegion} />
           </>
         )}

@@ -1,29 +1,23 @@
 import styles from "./PeelControl.module.css";
 
-export type Layer = "skin" | "bone";
+export type Layer = "skin" | "muscle" | "bone";
 
 type PeelControlProps = {
   layer: Layer;
   onLayerChange: (layer: Layer) => void;
-  boneAvailable: boolean;
 };
 
 /**
- * Anatomy layers. Skin and Bone are real; Bone needs a figure with a fitted
- * skeleton (currently the realistic male). Muscle is shown — but clearly
- * unavailable — so the roadmap is visible without pretending it works.
+ * Anatomy layers, peeled from the outside in. Skin and Muscle use the
+ * muscular figure from Pose; Muscle tints it and deepens its sculpted
+ * muscle forms so each group reads clearly. Bone shows the skeleton inside
+ * the realistic anatomy figure. Keys: S, M, B.
  */
-export default function PeelControl({ layer, onLayerChange, boneAvailable }: PeelControlProps) {
-  const items: { id: Layer | "muscle"; label: string; available: boolean; note?: string; hint?: string }[] = [
-    { id: "skin", label: "Skin", available: true },
-    { id: "muscle", label: "Muscle", available: false, note: "Soon", hint: "Muscle layer arrives with the full anatomy model" },
-    {
-      id: "bone",
-      label: "Bone",
-      available: boneAvailable,
-      note: boneAvailable ? undefined : "Male",
-      hint: boneAvailable ? "Show the skeleton" : "The skeleton is fitted to the realistic male figure",
-    },
+export default function PeelControl({ layer, onLayerChange }: PeelControlProps) {
+  const items: { id: Layer; label: string; available: boolean; note?: string; hint?: string }[] = [
+    { id: "skin", label: "Skin", available: true, note: "S", hint: "Surface forms (S)" },
+    { id: "muscle", label: "Muscle", available: true, note: "M", hint: "Muscle groups, emphasised (M)" },
+    { id: "bone", label: "Bone", available: true, note: "B", hint: "The skeleton inside the anatomy figure (B)" },
   ];
 
   return (
@@ -40,7 +34,7 @@ export default function PeelControl({ layer, onLayerChange, boneAvailable }: Pee
             disabled={!item.available}
             title={item.hint}
             className={`${styles.item} ${active ? styles.active : ""}`}
-            onClick={() => item.id !== "muscle" && onLayerChange(item.id)}
+            onClick={() => onLayerChange(item.id)}
           >
             <span className={styles.dot} />
             <span className={styles.label}>{item.label}</span>

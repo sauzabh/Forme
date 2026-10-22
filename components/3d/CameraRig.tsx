@@ -34,7 +34,7 @@ export default function CameraRig({ shot, subject, figureHeight, insetTop, inset
   const controlsRef = useRef<CameraControlsImpl>(null);
   const lastShot = useRef<Shot | null>(null);
   const get = useThree((state) => state.get);
-  const { bottom, top, width } = subject;
+  const { bottom, top, width, landmarks } = subject;
 
   useEffect(() => {
     const controls = controlsRef.current;
@@ -57,7 +57,7 @@ export default function CameraRig({ shot, subject, figureHeight, insetTop, inset
     const { camera, size } = get();
     const pose = shotPose(
       effective,
-      { bottom, top, width },
+      { bottom, top, width, landmarks },
       figureHeight,
       (camera as PerspectiveCamera).fov,
       size.width / size.height,
@@ -74,7 +74,7 @@ export default function CameraRig({ shot, subject, figureHeight, insetTop, inset
     controls.setTarget(...pose.target, true);
     controls.rotateTo(current + delta, toRad(pose.polar), true);
     controls.dollyTo(pose.distance, true);
-  }, [shot, bottom, top, width, figureHeight, insetTop, insetBottom, get]);
+  }, [shot, bottom, top, width, landmarks, figureHeight, insetTop, insetBottom, get]);
 
   return (
     <CameraControls
