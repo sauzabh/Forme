@@ -80,6 +80,13 @@ export default function PoseBrowser({
         </div>
 
         <button type="button" className={styles.random} onClick={onRandom} title="Random pose and angle (R)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="4" />
+            <circle cx="9" cy="9" r="1.3" fill="currentColor" stroke="none" />
+            <circle cx="15" cy="15" r="1.3" fill="currentColor" stroke="none" />
+            <circle cx="15" cy="9" r="1.3" fill="currentColor" stroke="none" />
+            <circle cx="9" cy="15" r="1.3" fill="currentColor" stroke="none" />
+          </svg>
           Random
         </button>
       </div>

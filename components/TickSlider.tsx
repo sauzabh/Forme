@@ -17,12 +17,18 @@ type TickSliderProps = {
 /**
  * A slider drawn as a row of tick marks: dark up to the value, light after
  * it. A real (invisible) range input sits on top, so dragging, clicking
- * and the arrow keys all work. While held it swells slightly, so it feels
- * like something you grab and pull.
+ * and the arrow keys all work. While held, the few ticks under the pointer
+ * grow like a magnifier, so it feels like grabbing and pulling one spot.
  */
+
+/** How many ticks either side of the grab point are magnified. */
+const LENS_RADIUS = 2.5;
+const LENS_STRENGTH = 0.8;
 export default function TickSlider({ label, value, min, max, display, onChange, ariaLabel, ticks = 48 }: TickSliderProps) {
   const [grabbing, setGrabbing] = useState(false);
-  const filled = Math.round(((value - min) / (max - min)) * ticks);
+  const fraction = (value - min) / (max - min);
+  const filled = Math.round(fraction * ticks);
+  const grabPoint = fraction * (ticks - 1);
 
   // Release wherever the pointer ends up, even outside the slider.
   useEffect(() => {
@@ -45,9 +51,16 @@ export default function TickSlider({ label, value, min, max, display, onChange, 
       <span className={styles.label}>{label}</span>
       <div className={styles.track}>
         <div className={styles.ticks} aria-hidden="true">
-          {Array.from({ length: ticks }, (_, i) => (
-            <span key={i} className={i < filled ? `${styles.tick} ${styles.on}` : styles.tick} />
-          ))}
+          {Array.from({ length: ticks }, (_, i) => {
+            const lens = grabbing ? Math.max(0, 1 - Math.abs(i - grabPoint) / LENS_RADIUS) : 0;
+            return (
+              <span
+                key={i}
+                className={i < filled ? `${styles.tick} ${styles.on}` : styles.tick}
+                style={lens > 0 ? { transform: `scaleY(${1 + LENS_STRENGTH * lens})` } : undefined}
+              />
+            );
+          })}
         </div>
         <input
           type="range"
