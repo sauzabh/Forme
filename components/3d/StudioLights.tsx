@@ -28,7 +28,7 @@ export default function StudioLights({ light, figureHeight }: StudioLightsProps)
 
   return (
     <>
-      <hemisphereLight args={["#fbf8f2", "#b9b1a3", 0.55]} />
+      <hemisphereLight args={["#ffffff", "#b4b4b4", 0.55]} />
       <primitive object={target} position={[0, centre, 0]} />
       <directionalLight
         position={[x, y, z]}

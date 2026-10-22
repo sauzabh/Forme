@@ -20,7 +20,7 @@ import { POSE_LIBRARY_URL } from "@/lib/poses";
 import type { Subject } from "@/lib/camera";
 import { useModel } from "./models";
 
-const SKIN_COLOR = "#dcd5c9";
+const SKIN_COLOR = "#d4d4d4";
 const HIPS = "pelvis";
 
 /**

@@ -6,8 +6,8 @@ import { useModel } from "./models";
 import { Mesh, type BufferGeometry, type Object3D } from "three";
 
 // Matte clay tones — close to a plaster cast, so light and shadow read clearly.
-const SKIN_COLOR = "#dcd5c9";
-const BONE_COLOR = "#ece4d2";
+const SKIN_COLOR = "#d4d4d4";
+const BONE_COLOR = "#e8e8e8";
 const XRAY_OPACITY = 0.13;
 
 function firstGeometry(scene: Object3D): BufferGeometry {
