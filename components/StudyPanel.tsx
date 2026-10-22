@@ -21,7 +21,7 @@ export default function StudyPanel({ region, onRegionChange }: StudyPanelProps) 
         <p className="text-secondary">
           {current
             ? current.note
-            : "Pick a part of the body below, or step through with ← →. Peel the layers with S, M and B."}
+            : "Pick a part of the body below, or step through with ← →. Switch layers with S and B."}
         </p>
       </div>
 

@@ -23,8 +23,6 @@ type FigureViewerProps = {
   pose: PoseState;
   /** Optional hair / clothing meshes to show on a posable figure. */
   parts: string[];
-  /** Study's Muscle layer. */
-  muscle: boolean;
   showSkeleton: boolean;
   shot: Shot;
   light: Light;
@@ -38,7 +36,7 @@ type FigureViewerProps = {
  * and the camera. It only renders when something changes ("demand" mode),
  * so it stays light on battery while an artist is drawing from it.
  */
-export default function FigureViewer({ figure, pose, parts, muscle, showSkeleton, shot, light, insets, onUserOrbit }: FigureViewerProps) {
+export default function FigureViewer({ figure, pose, parts, showSkeleton, shot, light, insets, onUserOrbit }: FigureViewerProps) {
   // What the camera frames: a posed figure's measured extent once known,
   // otherwise the figure standing.
   const [measured, setMeasured] = useState<{ key: string; subject: Subject } | null>(null);
@@ -75,7 +73,7 @@ export default function FigureViewer({ figure, pose, parts, muscle, showSkeleton
         <ModelErrorBoundary height={figure.height} resetKey={figure.model}>
           <Suspense fallback={<LoadingLabel height={figure.height} />}>
             {figure.posable ? (
-              <PosedFigure url={figure.model} poseId={pose.id} progress={pose.progress} parts={parts} muscle={muscle} onFramed={handleFramed} />
+              <PosedFigure url={figure.model} poseId={pose.id} progress={pose.progress} parts={parts} onFramed={handleFramed} />
             ) : (
               <FigureModel url={figure.model} xray={showSkeleton && Boolean(figure.skeleton)} />
             )}

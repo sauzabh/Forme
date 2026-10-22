@@ -28,8 +28,8 @@ const DEFAULT_VIEW: ViewId = "three-quarter";
  * on top of it. All app state lives here and flows down as props.
  *
  * Pose and Drill use the posable figures. Study shows the muscular male
- * standing for its Skin and Muscle layers, and the anatomy figure (the one
- * with a fitted skeleton) for Bone.
+ * standing for its Skin layer, and the anatomy figure (the one with a
+ * fitted skeleton) for Bone.
  */
 export default function Studio() {
   const [mode, setMode] = useState<Mode>("pose");
@@ -240,8 +240,8 @@ export default function Studio() {
         setPanel((open) => (open === "appearance" ? null : "appearance"));
       } else if (mode === "pose" && event.key.toLowerCase() === "r") {
         randomizePose();
-      } else if (mode === "study" && ["s", "m", "b"].includes(event.key.toLowerCase())) {
-        setLayer(({ s: "skin", m: "muscle", b: "bone" } as const)[event.key.toLowerCase() as "s" | "m" | "b"]);
+      } else if (mode === "study" && ["s", "b"].includes(event.key.toLowerCase())) {
+        setLayer(event.key.toLowerCase() === "b" ? "bone" : "skin");
       } else if (mode === "study" && (event.key === "ArrowRight" || event.key === "ArrowLeft")) {
         // Step through the regions; "Full figure" sits before the first.
         const ids: (RegionId | null)[] = [null, ...REGIONS.map((r) => r.id)];
@@ -263,7 +263,6 @@ export default function Studio() {
         figure={figure}
         pose={pose}
         parts={parts}
-        muscle={studying && layer === "muscle"}
         showSkeleton={showSkeleton}
         shot={effectiveShot}
         light={effectiveLight}

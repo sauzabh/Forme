@@ -33,9 +33,6 @@ const CLAY = {
   Hair: { color: "#6a6a6a", roughness: 0.75 },
 } as const;
 
-/** The Muscle layer: a muted muscle tint and deeper sculpted forms. */
-const MUSCLE = { color: "#b8826f", roughness: 0.5, normalScale: 2.4 };
-
 function clayFor(materialName: string) {
   if (materialName.startsWith("Hair")) return CLAY.Hair;
   if (materialName.startsWith("Cloth")) return CLAY.Cloth;
@@ -108,8 +105,6 @@ type PosedFigureProps = {
   progress: number;
   /** Optional meshes (hair, fitted clothes) to show; all others stay hidden. */
   parts: string[];
-  /** Study's Muscle layer: tint the skin and deepen its muscle forms. */
-  muscle?: boolean;
   /** Reports the posed figure's real extent so the camera can frame it. */
   onFramed: (subject: Subject) => void;
 };
@@ -166,15 +161,14 @@ function measure(figure: Object3D): Subject {
  * The model is cloned so its clay material and pose never leak into the
  * shared loader cache.
  */
-export function PosedFigure({ url, poseId, progress, parts, muscle = false, onFramed }: PosedFigureProps) {
+export function PosedFigure({ url, poseId, progress, parts, onFramed }: PosedFigureProps) {
   const { scene } = useModel(url);
   const library = useModel(POSE_LIBRARY_URL);
   const invalidate = useThree((state) => state.invalidate);
 
-  const { figure, materials, skin } = useMemo(() => {
+  const { figure, materials } = useMemo(() => {
     const copy = cloneSkinned(scene);
     const created: MeshStandardMaterial[] = [];
-    const skinMaterials: MeshStandardMaterial[] = [];
     copy.traverse((child) => {
       if (!(child instanceof Mesh)) return;
       const original = child.material as MeshStandardMaterial;
@@ -189,27 +183,14 @@ export function PosedFigure({ url, poseId, progress, parts, muscle = false, onFr
         ...(tint === CLAY.Skin ? {} : { side: DoubleSide }),
       });
       created.push(clay);
-      if (tint === CLAY.Skin) skinMaterials.push(clay);
       child.material = clay;
       child.castShadow = true;
       child.receiveShadow = true;
       // Posed limbs can leave the rest-pose bounds; never cull the figure.
       child.frustumCulled = false;
     });
-    return { figure: copy, materials: created, skin: skinMaterials };
+    return { figure: copy, materials: created };
   }, [scene]);
-
-  useLayoutEffect(() => {
-    for (const m of skin) {
-      m.setValues({
-        color: muscle ? MUSCLE.color : CLAY.Skin.color,
-        roughness: muscle ? MUSCLE.roughness : CLAY.Skin.roughness,
-      });
-      const depth = muscle ? MUSCLE.normalScale : 1;
-      m.normalScale.set(depth, depth);
-    }
-    invalidate();
-  }, [skin, muscle, invalidate]);
 
   // `scene` is the untouched cached original, so its hips are the rest pose.
   const clips = useMemo(

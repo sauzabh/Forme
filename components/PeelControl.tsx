@@ -1,6 +1,6 @@
 import styles from "./PeelControl.module.css";
 
-export type Layer = "skin" | "muscle" | "bone";
+export type Layer = "skin" | "bone";
 
 type PeelControlProps = {
   layer: Layer;
@@ -8,15 +8,15 @@ type PeelControlProps = {
 };
 
 /**
- * Anatomy layers, peeled from the outside in. Skin and Muscle use the
- * muscular figure from Pose; Muscle tints it and deepens its sculpted
- * muscle forms so each group reads clearly. Bone shows the skeleton inside
- * the realistic anatomy figure. Keys: S, M, B.
+ * Anatomy layers, peeled from the outside in. Skin uses the muscular figure
+ * from Pose; Bone shows the skeleton inside the realistic anatomy figure.
+ * Muscle is shown — but clearly unavailable — until a proper muscle model
+ * is in. Keys: S, B.
  */
 export default function PeelControl({ layer, onLayerChange }: PeelControlProps) {
-  const items: { id: Layer; label: string; available: boolean; note?: string; hint?: string }[] = [
+  const items: { id: Layer | "muscle"; label: string; available: boolean; note?: string; hint?: string }[] = [
     { id: "skin", label: "Skin", available: true, note: "S", hint: "Surface forms (S)" },
-    { id: "muscle", label: "Muscle", available: true, note: "M", hint: "Muscle groups, emphasised (M)" },
+    { id: "muscle", label: "Muscle", available: false, note: "Soon", hint: "Muscle layer coming soon" },
     { id: "bone", label: "Bone", available: true, note: "B", hint: "The skeleton inside the anatomy figure (B)" },
   ];
 
@@ -34,7 +34,7 @@ export default function PeelControl({ layer, onLayerChange }: PeelControlProps) 
             disabled={!item.available}
             title={item.hint}
             className={`${styles.item} ${active ? styles.active : ""}`}
-            onClick={() => onLayerChange(item.id)}
+            onClick={() => item.id !== "muscle" && onLayerChange(item.id)}
           >
             <span className={styles.dot} />
             <span className={styles.label}>{item.label}</span>
