@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { DURATIONS, RANDOMIZE_OPTIONS, currentPhotoId, nextPhotoId, type Drill, type DrillSource } from "@/lib/useDrill";
+import { DURATIONS, FIGURE_OPTIONS, RANDOMIZE_OPTIONS, currentPhotoId, nextPhotoId, type Drill, type DrillSource } from "@/lib/useDrill";
 import { PHOTOS, PHOTO_CREDIT, getPhoto } from "@/lib/photos";
 import styles from "./DrillInterface.module.css";
 
@@ -143,9 +143,32 @@ function DrillSetup({ drill, onClose }: { drill: Drill; onClose: () => void }) {
 
         {state.source === "figure" ? (
           <div className={styles.options}>
-            <span className="text-meta">Change each pose</span>
+            <div className={styles.row}>
+              <span className={styles.label}>Model</span>
+              <div className={`${styles.segmented} ${styles.segmentedSmall}`} role="radiogroup" aria-label="Model">
+                {FIGURE_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={option.id === state.figures}
+                    className={`${styles.segment} ${option.id === state.figures ? styles.segmentActive : ""}`}
+                    onClick={() => drill.setFigures(option.id)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <span className="text-meta">Change with each pose</span>
             {RANDOMIZE_OPTIONS.map((option) => (
-              <Toggle key={option.key} label={option.label} on={state.randomize[option.key]} onToggle={() => drill.toggle(option.key)} />
+              <Toggle
+                key={option.key}
+                label={option.label}
+                detail={option.detail}
+                on={state.randomize[option.key]}
+                onToggle={() => drill.toggle(option.key)}
+              />
             ))}
           </div>
         ) : (

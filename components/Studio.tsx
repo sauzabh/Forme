@@ -13,7 +13,7 @@ import type { Mode } from "./ModeSwitcher";
 import { ANATOMY_FIGURE, getFigure, type FigureId } from "@/lib/figures";
 import { DEFAULT_POSE_ID, getPose, posesIn, type PoseCategory } from "@/lib/poses";
 import { VIEWS, viewShot, type Shot, type ViewId } from "@/lib/camera";
-import { DEFAULT_LIGHT, type Light } from "@/lib/lighting";
+import { DEFAULT_LIGHT, normalizeAngle, type Light } from "@/lib/lighting";
 import type { RegionId } from "@/lib/regions";
 import { useDrill } from "@/lib/useDrill";
 import styles from "./Studio.module.css";
@@ -56,19 +56,22 @@ export default function Studio() {
   const randomize = drill.state.randomize;
 
   // During a drill, randomized settings temporarily override the user's.
-  const figure =
-    mode === "study" ? ANATOMY_FIGURE : getFigure(drillPose && randomize.figure ? drillPose.figureId : figureId);
+  const figure = mode === "study" ? ANATOMY_FIGURE : getFigure(drillPose ? drillPose.figureId : figureId);
   const pose = useMemo<PoseState>(
     () => (drillPose ? { id: drillPose.poseId, progress: drillPose.poseProgress } : { id: poseId, progress: poseProgress }),
     [drillPose, poseId, poseProgress],
   );
-  const effectiveLight =
-    drillPose && randomize.light ? { azimuth: drillPose.lightAzimuth, elevation: drillPose.lightElevation } : light;
   const drillShot = useMemo<Shot | null>(
     () => (drillPose && randomize.camera ? { azimuth: drillPose.cameraAzimuth, polar: drillPose.cameraPolar, focus: null } : null),
     [drillPose, randomize.camera],
   );
   const effectiveShot = drillShot ?? shot;
+  // Drill lighting is placed relative to the camera, so a "side" or "rim"
+  // light always reads that way from the artist's point of view.
+  const effectiveLight =
+    drillPose && randomize.light
+      ? { azimuth: normalizeAngle(effectiveShot.azimuth + drillPose.lightOffset), elevation: drillPose.lightElevation }
+      : light;
   const showSkeleton = mode === "study" && layer === "bone" && Boolean(figure.skeleton);
 
   const selectView = useCallback((view: ViewId) => {

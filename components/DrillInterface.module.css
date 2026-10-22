@@ -189,6 +189,15 @@
   cursor: pointer;
 }
 
+.segmentedSmall {
+  flex: none;
+  width: 216px;
+}
+
+.segmentedSmall .segment {
+  height: 30px;
+}
+
 .segmentActive {
   background: var(--color-surface);
   color: var(--color-text-primary);
@@ -509,7 +518,7 @@
 
 /* Short windows (e.g. laptops at 700–800px tall): tighten the setup card so
    the Start button stays on screen without scrolling. */
-@media (max-height: 820px) {
+@media (max-height: 880px) {
   .card {
     padding: var(--space-md) var(--space-lg);
     gap: 6px;
